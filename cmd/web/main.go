@@ -18,7 +18,7 @@ func main() {
 	http.Handle("/", templ.Handler(pages.Home("Özkan")))
 
 	// 3. htmx Partial HTML Endpoint'i
-	http.HandleFunc("/api/status", func(w http.ResponseWriter, r *r.Request) {
+	http.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(`
 			<div id="status-box" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-lg text-sm font-medium">
