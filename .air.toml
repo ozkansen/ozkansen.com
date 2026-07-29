@@ -1,0 +1,22 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+# Her dosya değişiminde önce templ derlenir, ardından Go binary'si oluşturulur
+cmd = "templ generate && go build -o ./tmp/main ./cmd/web"
+bin = "./tmp/main"
+delay = 1000 # ms cinsinden tetiklenme gecikmesi
+exclude_dir = ["assets", "tmp", "vendor", "node_modules", "static"]
+include_ext = ["go", "templ", "html"]
+exclude_regex = [".*_templ.go"]
+stop_on_error = true
+
+[color]
+build = "yellow"
+main = "magenta"
+runner = "green"
+watcher = "cyan"
+
+[misc]
+clean_on_exit = true

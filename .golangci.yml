@@ -1,0 +1,77 @@
+version: "2"
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+  # Otomatik üretilen Templ dosyalarını analiz dışında tutar
+  skip-files:
+    - ".*_templ\\.go$"
+
+linters:
+  disable-all: true
+  enable:
+    # --- Temel ve Hata Önleyici Linters ---
+    - errcheck       # İşlenmeyen hataları yakalar
+    - govet          # Go standart analiz aracı (printf formatları, struct etiketleri vb.)
+    - ineffassign    # Kullanılmayan değişken atamalarını tespit eder
+    - staticcheck    # Kapsamlı statik kod analizi (Go topluluk standardı)
+    - unused         # Kullanılmayan fonksiyon, sabit veya türleri bulur
+
+    # --- Web & Güvenlik (GOTH Stack için Kritik) ---
+    - bodyclose      # HTTP response body'lerinin close edilip edilmediğini denetler (Memory leak önler)
+    - gosec          # Güvenlik zafiyetlerini (SQL injection, XSS, zayıf kripto) tarar
+    - noctx          # HTTP isteklerinde context.Context kullanımını zorunlu kılar
+
+    # --- Kod Kalitesi & Idiomatic Go ---
+    - gocritic       # Kod stilini, performans sorunlarını ve anti-pattern'leri inceler
+    - revive         # Hızlı ve yapılandırılabilir kod stili denetleyicisi (golint yerine)
+    - copyloopvar    # Go 1.22+ döngü değişkeni kopyalama hatalarını kontrol eder
+    - goconst        # Tekrar eden metinleri (string) sabit yapmayı önerir
+    - unconvert      # Gereksiz tür dönüşümlerini (type casting) temizler
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment # Bellek optimizasyonu için struct sıralaması zorunluluğunu es geçer (okunabilirliği bozmamak için)
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+    disabled-checks:
+      - ifElseChain
+      - singleCaseSwitch
+
+  revive:
+    severity: warning
+    rules:
+      - name: exported
+        disabled: true # Tüm exported fonksiyonlara yorum yazma zorunluluğunu es geçer
+      - name: package-comments
+        disabled: true
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+issues:
+  # Üretilen kodlar ve test dosyaları için özel istisnalar
+  exclude-rules:
+    # Test dosyalarında hata kontrolü zorunluluğunu gevşetir
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+
+    # Templ tarafından üretilen Go dosyalarını tamamen yoksayar
+    - path: .*_templ\.go
+      linters:
+        - errcheck
+        - gocritic
+        - revive
+        - govet
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
