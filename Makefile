@@ -1,7 +1,7 @@
 .PHONY: dev templ tailwind air build lint lint-fix fmt
 
 install:
-	npm install tailwindcss @tailwindcss/cli
+	npm install -D tailwindcss @tailwindcss/cli
 	go install github.com/a-h/templ/cmd/templ@latest
 	go install github.com/air-verse/air@latest
 
