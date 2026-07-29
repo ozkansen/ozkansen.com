@@ -2,33 +2,43 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
-
-	"ozkansen.com/internal/views/pages"
+	"os"
 
 	"github.com/a-h/templ"
+
+	"ozkansen.com/internal/middleware"
+	"ozkansen.com/internal/views/pages"
 )
 
 func main() {
-	// 1. Statik dosyaların sunulması (CSS, resimler)
+	// Geliştirme ortamı için Text, Canlı (Prod) ortamı için JSON handler tercih edilebilir
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	slog.SetDefault(logger) // Global logger olarak ayarla
+
+	mux := http.NewServeMux()
+
+	// 1. Statik Dosyalar
 	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// 2. Anasayfa Routing (Templ Bileşeni)
-	http.Handle("/", templ.Handler(pages.Home("Özkan")))
+	// 2. Sayfa ve API Route'ları
+	mux.Handle("/", templ.Handler(pages.Home("Özkan")))
 
-	// 3. htmx Partial HTML Endpoint'i
-	http.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(`
-			<div id="status-box" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-lg text-sm font-medium">
-				🚀 Sunucu Aktif! HTMX isteği başarıyla işlendi ve partial HTML güncellendi.
-			</div>
-		`))
+		w.Write([]byte(`<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`))
 	})
 
-	log.Println("Sunucu 8080 portunda çalışıyor: http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	// Middleware zincirini uygula
+	loggingMiddleware := middleware.Logger(logger)
+	handlerWithLogging := loggingMiddleware(mux)
+
+	logger.Info("Sunucu başlatılıyor", slog.String("port", ":8080"))
+	if err := http.ListenAndServe(":8080", handlerWithLogging); err != nil {
 		log.Fatal(err)
 	}
 }
