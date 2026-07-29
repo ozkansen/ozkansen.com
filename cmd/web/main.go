@@ -28,7 +28,7 @@ func main() {
 	// 2. Sayfa ve API Route'ları
 	mux.Handle("/", templ.Handler(pages.Home("Özkan")))
 
-	mux.HandleFunc("/api/status", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/status", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(`<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`))
 	})

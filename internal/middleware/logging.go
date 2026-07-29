@@ -28,7 +28,7 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return n, err
 }
 
-// Logger, gelen ve giden tüm HTTP isteklerini detaylı şekilde slog ile kaydeder.
+// Logger gelen ve giden tüm HTTP isteklerini detaylı şekilde slog ile kaydeder.
 func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
