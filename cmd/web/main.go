@@ -5,8 +5,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/a-h/templ"
+	"github.com/lmittmann/tint"
 
 	"ozkansen.com/internal/middleware"
 	"ozkansen.com/internal/views/pages"
@@ -14,10 +16,13 @@ import (
 
 func main() {
 	// Geliştirme ortamı için Text, Canlı (Prod) ortamı için JSON handler tercih edilebilir
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+	logger := slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
+		Level:      slog.LevelDebug,
+		TimeFormat: time.Kitchen,
+		NoColor:    false,
 	}))
-	slog.SetDefault(logger) // Global logger olarak ayarla
+
+	slog.SetDefault(logger)
 
 	mux := http.NewServeMux()
 
