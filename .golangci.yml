@@ -25,6 +25,14 @@ linters:
     - copyloopvar    # Go 1.22+ döngü değişkeni kopyalama hatalarını kontrol eder
     - goconst        # Tekrar eden metinleri (string) sabit yapmayı önerir
     - unconvert      # Gereksiz tür dönüşümlerini (type casting) temizler
+    - intrange       # Go 1.22+ range over int deyimini teşvik eder
+    - errname        # Sentinel error isimlendirmesini zorlar (Err öneki)
+    - nilnil         # nil, nil dönüşlerini yakalar
+    - perfsprint     # fmt.Sprintf yerine strconv gibi daha hızlı alternatifleri önerir
+    - usestdlibvars  # Literal yerine stdlib sabitlerinin kullanımını teşvik eder
+    - wastedassign   # Gereksiz değişken atamalarını yakalar
+    - sloglint       # slog kullanımını denetler (anahtar tekrarı, karışık argümanlar)
+    - errorlint      # %w sarma ve errors.Is/As kullanımını zorlar
 
   settings:
     govet:
@@ -73,6 +81,17 @@ linters:
           - gocritic
           - revive
           - govet
+
+formatters:
+  enable:
+    - gofumpt # gofmt'un sıkılaştırılmış versiyonu
+    - gci     # import gruplarını stdlib / harici / yerel olarak düzenler
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(ozkansen.com)
 
 issues:
   max-issues-per-linter: 0
