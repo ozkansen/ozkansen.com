@@ -35,7 +35,9 @@ func main() {
 
 	mux.HandleFunc("/api/status", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(`<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`))
+		if _, err := w.Write([]byte(`<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`)); err != nil {
+			logger.Error("Status yanıtı yazılamadı", slog.String("error", err.Error()))
+		}
 	})
 
 	// Middleware zincirini uygula
@@ -43,7 +45,15 @@ func main() {
 	handlerWithLogging := loggingMiddleware(mux)
 
 	logger.Info("Sunucu başlatılıyor", slog.String("port", ":8080"))
-	if err := http.ListenAndServe(":8080", handlerWithLogging); err != nil {
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler:           handlerWithLogging,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
