@@ -33,6 +33,7 @@ linters:
     - wastedassign   # Gereksiz değişken atamalarını yakalar
     - sloglint       # slog kullanımını denetler (anahtar tekrarı, karışık argümanlar)
     - errorlint      # %w sarma ve errors.Is/As kullanımını zorlar
+    - modernize      # Modern Go dili ve kütüphane özelliklerini kullanmayı önerir (otomatik düzeltmeli)
 
   settings:
     govet:
