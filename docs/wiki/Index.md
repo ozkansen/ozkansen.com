@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-07-31
+last_updated: 2026-08-02
 ---
 
 # Index
@@ -19,6 +19,7 @@ flowchart LR
 
     subgraph Tooling
         DevTooling
+        Linting
     end
 
     Client[İstemci] --> WebServer
@@ -29,18 +30,22 @@ flowchart LR
     DevTooling --> TemplViews
     DevTooling --> StaticAssets
     DevTooling --> WebServer
+    DevTooling --> Linting
+    Linting --> WebServer
+    Linting --> TemplViews
 ```
 
 ## Node Listesi
 
 ### Delivery Katmanı
-- [[WebServer]] — giriş noktası, `ServeMux`, route tanımları, statik servis, middleware sarmalama
+- [[WebServer]] — giriş noktası, `ServeMux`, route tanımları, `http.Server` timeout'ları, middleware sarmalama
 - [[LoggingMiddleware]] — istek/yanıt loglama, `responseWriter` sarmalayıcı, seviye mantığı
 - [[TemplViews]] — templ view katmanı: `layout.Base` iskeleti + `pages.Home` sayfası
 - [[StaticAssets]] — Tailwind CSS (v4 `@source`) + HTMX/Alpine.js statik kopyaları
 
 ### Araçlar / Süreç
 - [[DevTooling]] — `Makefile` (dev/build/lint) + `.air.toml` hot-reload pipeline
+- [[Linting]] — golangci-lint v2 konfigürasyonu: linter seti, ayarlar, exclusions, gofumpt/gci formatter'ları
 
 ## Bağımlılık Grafiği
 
@@ -52,6 +57,8 @@ graph TD
     TemplViews --> StaticAssets
     TemplViews --> WebServer
     StaticAssets --> TemplViews
+    DevTooling --> Linting
+    Linting --> WebServer
 ```
 
 ## Uçtan Uca İstek Akışı
@@ -84,3 +91,4 @@ sequenceDiagram
 3. Sayfa render ve component hiyerarşisi için → [[TemplViews]]
 4. Stillerin nasıl derlendiği için → [[StaticAssets]]
 5. Geliştirme/üretim pipeline'ı için → [[DevTooling]]
+6. Lint kural ve istisnaları için → [[Linting]]

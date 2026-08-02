@@ -1,16 +1,16 @@
 ---
 layer: repository
-dependencies: [TemplViews, StaticAssets, WebServer]
-last_updated: 2026-07-31
+dependencies: [TemplViews, StaticAssets, WebServer, Linting]
+last_updated: 2026-08-02
 ---
 
 # DevTooling
 
 **Özet:** Geliştirme ve derleme iş akışını `Makefile` ve `.air.toml` üzerinden yönetir. `make dev` templ, Tailwind ve Air izleyicilerini paralel başlatır; `make build` üretim için optimize edilmiş binary üretir. Air, `.templ` değişikliklerinde önce templ'i derleyip sonra Go binary'sini yeniden inşa ederek hot-reload sağlar.
 
-**Kütüphaneler/Tool'lar:** GNU Make, `a-h/templ` CLI, Tailwind CSS CLI (`@tailwindcss/cli`), `air-verse/air`, `golangci-lint`, `gofmt`.
+**Kütüphaneler/Tool'lar:** GNU Make, `a-h/templ` CLI, Tailwind CSS CLI (`@tailwindcss/cli`), `air-verse/air`, `golangci-lint` (v2), `gofumpt`, `gci`, `gofmt`.
 
-**Bağlantılar:** [[TemplViews]] · [[StaticAssets]] · [[WebServer]] · [[Index]]
+**Bağlantılar:** [[TemplViews]] · [[StaticAssets]] · [[WebServer]] · [[Linting]] · [[Index]]
 
 **Dosyalar:**
 - `Makefile`
@@ -47,8 +47,8 @@ flowchart TD
 | `dev` | `make -j3 templ tailwind air` | Tüm izleyicileri paralel başlatır |
 | `build` | `templ generate` + `tailwind --minify` + `go build` | Production binary üretir (`./bin/main`) |
 | `fmt` | `gofmt -w .` + `templ fmt .` | Formatlar |
-| `lint` | `golangci-lint run ./...` | Kural ihlali taraması |
-| `lint-fix` | fmt + `golangci-lint run --fix` | Otomatik düzeltme |
+| `lint` | `golangci-lint run ./...` | Kural ihlali taraması (bkz. [[Linting]]) |
+| `lint-fix` | fmt + `golangci-lint run --fix` | Otomatik düzeltme (linter + gofumpt/gci formatter'ları) |
 
 ### Air yapılandırması (`.air.toml`)
 
@@ -63,3 +63,4 @@ flowchart TD
 - Geliştirme binary'si `./tmp/main` içinde, production binary'si `./bin/main` içinde üretilir; bu dizinler gitignore'dadır.
 - `node_modules` yalnızca Tailwind CLI için kullanılır; runtime JS bağımlılığı yoktur.
 - Lint hiyerarşisi `fmt → lint → lint-fix` şeklinde önerilir; CI öncesi `lint` çalıştırılmalıdır.
+- `.golangci.yml` ayrı bir node olarak incelenir: [[Linting]]. `make lint-fix` ayrıca `gofumpt` ve `gci` (import gruplama) formatter'larını da uygular.
