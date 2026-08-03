@@ -1,7 +1,5 @@
 # Custom
 node_modules/
-package.json
-package-lock.json
 tmp/
 main
 
