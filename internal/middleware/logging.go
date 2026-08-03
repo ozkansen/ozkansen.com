@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"bufio"
+	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 )
@@ -31,6 +34,36 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	n, err := rw.ResponseWriter.Write(b)
 	rw.bytesWritten += n
 	return n, err
+}
+
+// Flush, net/http Flusher arayüzünü ileri taşır (SSE/streaming yanıtlar için).
+// Temel ResponseWriter Flusher desteklemiyorsa çağrı sessizce yok sayılır.
+func (rw *responseWriter) Flush() {
+	if f, ok := rw.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+// Hijack, WebSocket/uzun poll gibi senaryolar için temel bağlantıyı devralır.
+func (rw *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if h, ok := rw.ResponseWriter.(http.Hijacker); ok {
+		return h.Hijack()
+	}
+	return nil, nil, errors.New("underlying ResponseWriter does not implement http.Hijacker")
+}
+
+// Push, HTTP/2 sunucu push için Pusher arayüzünü ileri taşır.
+func (rw *responseWriter) Push(target string, opts *http.PushOptions) error {
+	if p, ok := rw.ResponseWriter.(http.Pusher); ok {
+		return p.Push(target, opts)
+	}
+	return http.ErrNotSupported
+}
+
+// Unwrap, http.ResponseController'ın sarmalayıcıyı aşarak temel
+// ResponseWriter üzerindeki Flusher/Hijacker/Pusher yeteneklerini bulmasını sağlar.
+func (rw *responseWriter) Unwrap() http.ResponseWriter {
+	return rw.ResponseWriter
 }
 
 // Logger gelen ve giden tüm HTTP isteklerini detaylı şekilde slog ile kaydeder.
