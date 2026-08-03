@@ -14,6 +14,11 @@ type responseWriter struct {
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
+	// Birden fazla çağrıyı yoksay: net/http ilk çağrıyı kullanır,
+	// log'un gerçek durum koduyla uyumlu kalması için burada da ilki korunur.
+	if rw.status != 0 {
+		return
+	}
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 }
@@ -36,7 +41,6 @@ func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 
 			rw := &responseWriter{
 				ResponseWriter: w,
-				status:         http.StatusOK, // Varsayılan değer
 			}
 
 			// İsteği sonraki handler'a ilet
