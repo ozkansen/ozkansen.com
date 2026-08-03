@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -33,12 +34,7 @@ func main() {
 	// 2. Sayfa ve API Route'ları
 	mux.Handle("/", templ.Handler(pages.Home("Özkan")))
 
-	mux.HandleFunc("/api/status", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		if _, err := w.Write([]byte(`<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`)); err != nil {
-			logger.Error("Status yanıtı yazılamadı", slog.String("error", err.Error()))
-		}
-	})
+	mux.HandleFunc("/api/status", apiStatusHandler(logger))
 
 	// Middleware zincirini uygula
 	loggingMiddleware := middleware.Logger(logger)
@@ -55,5 +51,24 @@ func main() {
 	}
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// statusFragment, /api/status uç noktasının HTMX fragment yanıtıdır.
+const statusFragment = `<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`
+
+// apiStatusHandler, HTMX istekleri için tam sayfa yerine yalnızca
+// statusFragment HTML parçasını döndürür.
+func apiStatusHandler(logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		// Durum kodu gövde yazılmadan önce açıkça set edilir;
+		// böylece yanıt commit edilmeden önce hata yakalanabilir.
+		w.WriteHeader(http.StatusOK)
+		if _, err := io.WriteString(w, statusFragment); err != nil {
+			// Yanıt zaten commit edildiği için durum kodu değiştirilemez;
+			// yazma hatası (genelde bağlantı kopması) ancak loglanır.
+			logger.Error("Status yanıtı yazılamadı", slog.String("error", err.Error()))
+		}
 	}
 }
