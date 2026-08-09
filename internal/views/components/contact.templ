@@ -1,0 +1,71 @@
+package components
+
+import "ozkansen.com/internal/i18n"
+
+templ Contact(tr *i18n.Translator) {
+	<section id="contact" class="py-24">
+		<div class="max-w-6xl mx-auto px-6">
+			<div class="bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-10 md:p-16 relative overflow-hidden">
+				<div class="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+				<div class="absolute bottom-0 left-0 w-40 h-40 bg-accent/10 rounded-full blur-2xl pointer-events-none" aria-hidden="true"></div>
+
+				<div class="relative z-10 grid md:grid-cols-2 gap-12 items-start">
+					<div>
+						<p class="reveal text-xs font-medium text-accent tracking-widest uppercase mb-3">{ tr.T("contact.eyebrow") }</p>
+						<h2 class="reveal d1 font-display font-bold text-4xl md:text-5xl text-white leading-tight mb-5">{ tr.T("contact.title1") }<br/>{ tr.T("contact.title2") }</h2>
+						<p class="reveal d2 text-zinc-400 leading-relaxed mb-8">{ tr.T("contact.text") }</p>
+
+						<div class="reveal d3 flex flex-col gap-4">
+							<a href="mailto:hello@ozkansen.com" class="group flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+								<span class="w-9 h-9 flex items-center justify-center bg-zinc-800 rounded-lg group-hover:bg-accent/20 transition-colors shrink-0">@MailIcon()</span>
+								<span class="text-sm">hello@ozkansen.com</span>
+							</a>
+							<a href="https://linkedin.com/in/ozkansen" rel="noopener noreferrer" target="_blank" class="group flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+								<span class="w-9 h-9 flex items-center justify-center bg-zinc-800 rounded-lg group-hover:bg-accent/20 transition-colors shrink-0">@LinkedInIcon()</span>
+								<span class="text-sm">linkedin.com/in/ozkansen</span>
+							</a>
+							<a href="https://github.com/ozkansen" rel="noopener noreferrer" target="_blank" class="group flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+								<span class="w-9 h-9 flex items-center justify-center bg-zinc-800 rounded-lg group-hover:bg-accent/20 transition-colors shrink-0">@GitHubIcon()</span>
+								<span class="text-sm">github.com/ozkansen</span>
+							</a>
+						</div>
+					</div>
+
+					<div class="reveal d2">
+						<form hx-post="/api/contact" hx-target="#contact-feedback" hx-swap="innerHTML" hx-disabled-elt="find button" novalidate>
+							<input type="hidden" name="locale" value={ string(tr.Locale()) }/>
+							<div class="flex flex-col gap-4">
+								<div class="grid sm:grid-cols-2 gap-4">
+									<div>
+										<label for="fname" class="block text-xs font-medium text-zinc-400 mb-1.5">{ tr.T("contact.form.name") } <span aria-hidden="true">*</span></label>
+										<input type="text" id="fname" name="name" placeholder={ tr.T("contact.form.name.ph") } required autocomplete="name"
+											class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-accent transition-colors"/>
+									</div>
+									<div>
+										<label for="femail" class="block text-xs font-medium text-zinc-400 mb-1.5">{ tr.T("contact.form.email") } <span aria-hidden="true">*</span></label>
+										<input type="email" id="femail" name="email" placeholder={ tr.T("contact.form.email.ph") } required autocomplete="email"
+											class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-accent transition-colors"/>
+									</div>
+								</div>
+								<div>
+									<label for="fsubject" class="block text-xs font-medium text-zinc-400 mb-1.5">{ tr.T("contact.form.subject") }</label>
+									<input type="text" id="fsubject" name="subject" placeholder={ tr.T("contact.form.subject.ph") }
+										class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-accent transition-colors"/>
+								</div>
+								<div>
+									<label for="fmessage" class="block text-xs font-medium text-zinc-400 mb-1.5">{ tr.T("contact.form.message") } <span aria-hidden="true">*</span></label>
+									<textarea id="fmessage" name="message" rows="4" placeholder={ tr.T("contact.form.message.ph") } required
+										class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+								</div>
+								<div id="contact-feedback"></div>
+								<button type="submit" class="shimmer w-full bg-accent text-white font-display font-bold text-sm py-3.5 rounded-xl hover:bg-accent-light transition-colors">
+									{ tr.T("contact.form.submit") } →
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+}

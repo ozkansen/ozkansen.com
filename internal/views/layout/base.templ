@@ -1,33 +1,41 @@
 package layout
 
-templ Base(title string) {
+import (
+	"ozkansen.com/internal/i18n"
+	"ozkansen.com/internal/views/components"
+)
+
+const siteURL = "https://ozkansen.com"
+
+templ Base(title string, tr *i18n.Translator, active string) {
 	<!DOCTYPE html>
-	<html lang="tr">
+	<html lang={ string(tr.Locale()) } x-data="site()" :class="dark ? 'dark' : ''" class="scroll-smooth">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="description" content={ tr.T("meta.description") }/>
+			<meta name="keywords" content={ tr.T("meta.keywords") }/>
+			<meta name="author" content="Özkan"/>
+			<meta property="og:title" content={ tr.T("meta.og.title") }/>
+			<meta property="og:description" content={ tr.T("meta.og.description") }/>
+			<meta property="og:type" content="website"/>
+			<meta property="og:url" content={ siteURL + "/" + string(tr.Locale()) + "/" }/>
+			<link rel="canonical" href={ siteURL + "/" + string(tr.Locale()) + "/" }/>
+			<link rel="alternate" hreflang="tr" href={ siteURL + "/tr/" }/>
+			<link rel="alternate" hreflang="en" href={ siteURL + "/en/" }/>
+			<link rel="alternate" hreflang="x-default" href={ siteURL + "/tr/" }/>
 			<title>{ title }</title>
 			<link rel="stylesheet" href="/static/css/styles.css"/>
-			<!-- HTMX ve Alpine.js CDN -->
 			<script src="/static/js/htmx.min.js" defer></script>
+			<script src="/static/js/site.js" defer></script>
 			<script src="/static/js/cdn.min.js" defer></script>
 		</head>
-		<body class="bg-slate-900 text-slate-100 antialiased min-h-screen flex flex-col">
-			<header class="border-b border-slate-800 p-4">
-				<div class="max-w-4xl mx-auto flex justify-between items-center">
-					<a href="/" class="font-bold text-xl text-indigo-400">Personal Space</a>
-					<nav class="space-x-4 text-sm font-medium">
-						<a href="/" class="hover:text-indigo-400 transition">Anasayfa</a>
-						<a href="/projects" class="hover:text-indigo-400 transition">Projeler</a>
-					</nav>
-				</div>
-			</header>
-			<main class="flex-1 max-w-4xl w-full mx-auto p-4 py-8">
+		<body class="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-body antialiased">
+			@components.Header(tr, active)
+			<main>
 				{ children... }
 			</main>
-			<footer class="border-t border-slate-800 p-4 text-center text-slate-500 text-sm">
-				© 2026 Tüm hakları saklıdır.
-			</footer>
+			@components.Footer(tr)
 		</body>
 	</html>
 }

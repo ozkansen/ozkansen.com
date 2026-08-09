@@ -8,9 +8,13 @@ package pages
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "ozkansen.com/internal/views/layout"
+import (
+	"ozkansen.com/internal/i18n"
+	"ozkansen.com/internal/views/components"
+	"ozkansen.com/internal/views/layout"
+)
 
-func Home(name string) templ.Component {
+func Home(tr *i18n.Translator) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -43,26 +47,61 @@ func Home(name string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"space-y-8\"><div><h1 class=\"text-4xl font-extrabold tracking-tight\">Merhaba, Ben <span class=\"text-indigo-400\">")
+			templ_7745c5c3_Err = components.Hero(tr).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(name)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/pages/home.templ`, Line: 10, Col: 54}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span> 👋</h1><p class=\"text-slate-400 text-lg mt-2\">Backend sistemler, modern web mimarileri ve açık kaynak yazılımlar geliştiriyorum.</p></div><!-- Alpine.js Örneği: İstemci Tarafında Çalışan Toggle/Dropdown --><div x-data=\"{ open: false }\" class=\"bg-slate-800/50 p-6 rounded-xl border border-slate-800 space-y-3\"><div class=\"flex items-center justify-between\"><span class=\"font-semibold text-sm text-slate-300\">Alpine.js İstemci Durumu</span> <button @click=\"open = !open\" class=\"px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-md text-xs font-semibold transition\"><span x-text=\"open ? 'Gizle' : 'Detay Göster'\"></span></button></div><div x-show=\"open\" x-transition class=\"p-4 bg-slate-900 rounded-lg text-slate-400 text-sm border border-slate-800\">Bu kutu sunucuya hiç istek atmadan, tamamen tarayıcıda Alpine.js `x-data` durumu ile yönetilir.</div></div><!-- htmx Örneği: Sunucudan Sayfa Yenilenmeden İçerik Çekme --><div class=\"bg-slate-800/50 p-6 rounded-xl border border-slate-800 space-y-4\"><div><h3 class=\"font-semibold text-slate-200\">htmx Sunucu Etkileşimi</h3><p class=\"text-xs text-slate-400\">Butona basıldığında sunucu tam bir sayfa değil, sadece ilgili HTML parçasını döner.</p></div><button hx-get=\"/api/status\" hx-target=\"#status-box\" hx-swap=\"outerHTML\" class=\"px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-md text-sm font-semibold transition\">Sunucu Durumunu Kontrol Et</button><div id=\"status-box\" class=\"text-slate-500 text-sm italic\">Henüz istek atılmadı...</div></div></section>")
+			templ_7745c5c3_Err = components.Services(tr).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.Work(tr).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.About(tr).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.Testimonials(tr).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.Blog(tr).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.Contact(tr).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Anasayfa | "+name).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base(tr.T("meta.title"), tr, "").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

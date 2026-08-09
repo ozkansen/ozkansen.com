@@ -1,0 +1,19 @@
+package components
+
+import "ozkansen.com/internal/i18n"
+
+templ Footer(tr *i18n.Translator) {
+	<footer class="border-t border-zinc-100 dark:border-zinc-900">
+		<div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+			<p class="text-sm text-zinc-400">
+				© <span data-year></span> Özkan. { tr.T("footer.rights") }
+			</p>
+			<p class="text-xs text-zinc-500">
+				{ tr.T("footer.built") }
+				<a href="https://tailwindcss.com" rel="noopener noreferrer" target="_blank" class="hover:text-accent transition-colors">Tailwind CSS</a>
+				&amp;
+				<a href="https://alpinejs.dev" rel="noopener noreferrer" target="_blank" class="hover:text-accent transition-colors">Alpine.js</a>
+			</p>
+		</div>
+	</footer>
+}

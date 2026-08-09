@@ -6,11 +6,14 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
 
+	"ozkansen.com/internal/handlers"
+	"ozkansen.com/internal/i18n"
 	"ozkansen.com/internal/middleware"
 	"ozkansen.com/internal/views/pages"
 )
@@ -32,7 +35,9 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// 2. Sayfa ve API Route'ları
-	mux.Handle("/", templ.Handler(pages.Home("Özkan")))
+	mux.HandleFunc("/", rootHandler)
+
+	mux.HandleFunc("/api/contact", handlers.Contact(logger))
 
 	mux.HandleFunc("/api/status", apiStatusHandler(logger))
 
@@ -52,6 +57,40 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// rootHandler, locale önekli sayfaları yönlendirir.
+//   - /        → /tr/ (varsayılan dile 301 yönlendirme)
+//   - /tr/     → Türkçe anasayfa
+//   - /en/     → İngilizce anasayfa
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+
+	if path == "/" {
+		http.Redirect(w, r, "/"+string(i18n.DefaultLocale)+"/", http.StatusMovedPermanently)
+		return
+	}
+
+	if !strings.HasPrefix(path, "/") {
+		http.NotFound(w, r)
+		return
+	}
+	segments := strings.SplitN(strings.TrimPrefix(path, "/"), "/", 2)
+	locale := i18n.ParseLocale(segments[0])
+	if len(segments) == 2 && segments[1] != "" {
+		// Şimdilik yalnızca anasayfa var; alt yollar bilinmeyen sayfa.
+		http.NotFound(w, r)
+		return
+	}
+
+	tr, err := i18n.Load(locale)
+	if err != nil {
+		slog.Error("i18n.Load hatası", slog.String("locale", string(locale)), slog.String("error", err.Error()))
+		http.Error(w, "iç sunucu hatası", http.StatusInternalServerError)
+		return
+	}
+
+	templ.Handler(pages.Home(tr)).ServeHTTP(w, r)
 }
 
 // statusFragment, /api/status uç noktasının HTMX fragment yanıtıdır.

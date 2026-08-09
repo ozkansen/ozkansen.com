@@ -1,0 +1,70 @@
+package components
+
+import "ozkansen.com/internal/i18n"
+
+templ Blog(tr *i18n.Translator) {
+	<section id="blog" class="py-24 bg-zinc-50 dark:bg-zinc-900/40">
+		<div class="max-w-6xl mx-auto px-6">
+			<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
+				<div>
+					<p class="reveal text-xs font-medium text-accent tracking-widest uppercase mb-3">{ tr.T("blog.eyebrow") }</p>
+					<h2 class="reveal d1 font-display font-bold text-4xl md:text-5xl text-zinc-900 dark:text-white">{ tr.T("blog.title") }</h2>
+				</div>
+				<a href="/blog" class="reveal d1 text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-accent transition-colors self-start sm:self-auto nl">{ tr.T("blog.all") } →</a>
+			</div>
+
+			<div class="grid md:grid-cols-3 gap-6">
+				<article class="reveal d1 card-h group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 hover:border-accent">
+					<div class="pf w-full h-44">
+						<img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=700&q=80" alt={ tr.T("blog.1.title") } loading="lazy"/>
+					</div>
+					<div class="p-6">
+						<div class="flex items-center gap-3 mb-3">
+							<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">{ tr.T("blog.1.tags") }</span>
+							<span class="text-xs text-zinc-400">{ tr.T("blog.1.date") }</span>
+						</div>
+						<a href="/blog">
+							<h3 class="font-display font-bold text-lg text-zinc-900 dark:text-white mb-2 group-hover:text-accent transition-colors">{ tr.T("blog.1.title") }</h3>
+						</a>
+						<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ tr.T("blog.1.text") }</p>
+						<a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("blog.1.cta") } →</a>
+					</div>
+				</article>
+
+				<article class="reveal d2 card-h group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 hover:border-accent">
+					<div class="pf w-full h-44">
+						<img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=700&q=80" alt={ tr.T("blog.2.title") } loading="lazy"/>
+					</div>
+					<div class="p-6">
+						<div class="flex items-center gap-3 mb-3">
+							<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">{ tr.T("blog.2.tags") }</span>
+							<span class="text-xs text-zinc-400">{ tr.T("blog.2.date") }</span>
+						</div>
+						<a href="/blog">
+							<h3 class="font-display font-bold text-lg text-zinc-900 dark:text-white mb-2 group-hover:text-accent transition-colors">{ tr.T("blog.2.title") }</h3>
+						</a>
+						<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ tr.T("blog.2.text") }</p>
+						<a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("blog.2.cta") } →</a>
+					</div>
+				</article>
+
+				<article class="reveal d3 card-h group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 hover:border-accent">
+					<div class="pf w-full h-44">
+						<img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=700&q=80" alt={ tr.T("blog.3.title") } loading="lazy"/>
+					</div>
+					<div class="p-6">
+						<div class="flex items-center gap-3 mb-3">
+							<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">{ tr.T("blog.3.tags") }</span>
+							<span class="text-xs text-zinc-400">{ tr.T("blog.3.date") }</span>
+						</div>
+						<a href="/blog">
+							<h3 class="font-display font-bold text-lg text-zinc-900 dark:text-white mb-2 group-hover:text-accent transition-colors">{ tr.T("blog.3.title") }</h3>
+						</a>
+						<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ tr.T("blog.3.text") }</p>
+						<a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("blog.3.cta") } →</a>
+					</div>
+				</article>
+			</div>
+		</div>
+	</section>
+}
