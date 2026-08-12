@@ -1,8 +1,11 @@
 package components
 
-import "ozkansen.com/internal/i18n"
+import (
+	"ozkansen.com/internal/content"
+	"ozkansen.com/internal/i18n"
+)
 
-templ Work(tr *i18n.Translator) {
+templ Work(tr *i18n.Translator, site *content.Site) {
 	<section id="work" class="py-24">
 		<div class="max-w-6xl mx-auto px-6">
 			<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
@@ -14,58 +17,55 @@ templ Work(tr *i18n.Translator) {
 			</div>
 
 			<div class="grid md:grid-cols-2 gap-6">
-				<article class="card-h reveal d1 group rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-accent md:row-span-2">
-					<div class="pf w-full h-64 md:h-80">
-						<img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=900&q=80" alt="Novu SaaS Dashboard" loading="lazy"/>
-					</div>
-					<div class="p-7">
-						<div class="flex flex-wrap gap-2 mb-4">
-							<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-3 py-1 rounded-full">{ tr.T("work.project1.tags.saas") }</span>
-							<span class="text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-3 py-1 rounded-full">{ tr.T("work.project1.tags.figma") }</span>
-							<span class="text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-3 py-1 rounded-full">{ tr.T("work.project1.tags.tailwind") }</span>
-						</div>
-						<a href="/projects">
-							<h3 class="font-display font-bold text-2xl text-zinc-900 dark:text-white mb-2">{ tr.T("work.project1.title") }</h3>
-						</a>
-						<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5">{ tr.T("work.project1.text") }</p>
-						<a href="/projects" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("work.project1.cta") } <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></a>
-					</div>
-				</article>
-
-				<article class="card-h reveal d2 group rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-accent">
-					<div class="pf w-full h-48">
-						<img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80" alt="Finlo Fintech App" loading="lazy"/>
-					</div>
-					<div class="p-6">
-						<div class="flex flex-wrap gap-2 mb-3">
-							<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-3 py-1 rounded-full">{ tr.T("work.project2.tags.fintech") }</span>
-							<span class="text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-3 py-1 rounded-full">{ tr.T("work.project2.tags.landing") }</span>
-						</div>
-						<a href="/projects">
-							<h3 class="font-display font-bold text-xl text-zinc-900 dark:text-white mb-1.5">{ tr.T("work.project2.title") }</h3>
-						</a>
-						<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ tr.T("work.project2.text") }</p>
-						<a href="/projects" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("work.project2.cta") } →</a>
-					</div>
-				</article>
-
-				<article class="card-h reveal d3 group rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-accent">
-					<div class="pf w-full h-48">
-						<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80" alt="Orea Creative Agency" loading="lazy"/>
-					</div>
-					<div class="p-6">
-						<div class="flex flex-wrap gap-2 mb-3">
-							<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-3 py-1 rounded-full">{ tr.T("work.project3.tags.agency") }</span>
-							<span class="text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-3 py-1 rounded-full">{ tr.T("work.project3.tags.animation") }</span>
-						</div>
-						<a href="/projects">
-							<h3 class="font-display font-bold text-xl text-zinc-900 dark:text-white mb-1.5">{ tr.T("work.project3.title") }</h3>
-						</a>
-						<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ tr.T("work.project3.text") }</p>
-						<a href="/projects" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("work.project3.cta") } →</a>
-					</div>
-				</article>
+				if len(site.Projects) > 0 {
+					@ProjectCard(tr, site.Projects[0], true)
+				}
+				if len(site.Projects) > 1 {
+					for _, project := range site.Projects[1:] {
+						@ProjectCard(tr, project, false)
+					}
+				}
 			</div>
 		</div>
 	</section>
+}
+
+templ ProjectCard(tr *i18n.Translator, project *content.Project, featured bool) {
+	if featured {
+		<article class="card-h reveal d1 group rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-accent md:row-span-2">
+			<div class="pf w-full h-64 md:h-80">
+				<img src={ project.Image } alt={ project.Title(string(tr.Locale())) } loading="lazy"/>
+			</div>
+			<div class="p-7">
+				<div class="flex flex-wrap gap-2 mb-4">
+					for _, tag := range project.Tags(string(tr.Locale())) {
+						<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-3 py-1 rounded-full">{ tag }</span>
+					}
+				</div>
+				<a href="/projects">
+					<h3 class="font-display font-bold text-2xl text-zinc-900 dark:text-white mb-2">{ project.Title(string(tr.Locale())) }</h3>
+				</a>
+				<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5">{ project.BodyText(string(tr.Locale())) }</p>
+				<a href="/projects" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("work.cta") } <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></a>
+			</div>
+		</article>
+	} else {
+		<article class="card-h reveal group rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-accent">
+			<div class="pf w-full h-48">
+				<img src={ project.Image } alt={ project.Title(string(tr.Locale())) } loading="lazy"/>
+			</div>
+			<div class="p-6">
+				<div class="flex flex-wrap gap-2 mb-3">
+					for _, tag := range project.Tags(string(tr.Locale())) {
+						<span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-3 py-1 rounded-full">{ tag }</span>
+					}
+				</div>
+				<a href="/projects">
+					<h3 class="font-display font-bold text-xl text-zinc-900 dark:text-white mb-1.5">{ project.Title(string(tr.Locale())) }</h3>
+				</a>
+				<p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ project.BodyText(string(tr.Locale())) }</p>
+				<a href="/projects" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-white nl">{ tr.T("work.cta") } →</a>
+			</div>
+		</article>
+	}
 }

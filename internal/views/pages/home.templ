@@ -1,19 +1,20 @@
 package pages
 
 import (
+	"ozkansen.com/internal/content"
 	"ozkansen.com/internal/i18n"
 	"ozkansen.com/internal/views/components"
 	"ozkansen.com/internal/views/layout"
 )
 
-templ Home(tr *i18n.Translator) {
+templ Home(tr *i18n.Translator, site *content.Site) {
 	@layout.Base(tr.T("meta.title"), tr, "") {
-		@components.Hero(tr)
-		@components.Services(tr)
-		@components.Work(tr)
-		@components.About(tr)
-		@components.Testimonials(tr)
-		@components.Blog(tr)
+		@components.Hero(tr, site)
+		@components.Services(tr, site)
+		@components.Work(tr, site)
+		@components.About(tr, site)
+		@components.Testimonials(tr, site)
+		@components.Blog(tr, site)
 		@components.Contact(tr)
 	}
 }

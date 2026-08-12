@@ -1,0 +1,13 @@
+email: hello@ozkansen.com
+linkedin: https://linkedin.com/in/ozkansen
+github: https://github.com/ozkansen
+stats:
+  - value: "34+"
+    label_tr: Tamamlanan Proje
+    label_en: Projects done
+  - value: "21+"
+    label_tr: Mutlu Müşteri
+    label_en: Happy clients
+  - value: "5y"
+    label_tr: Deneyim
+    label_en: Experience

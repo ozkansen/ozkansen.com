@@ -1,8 +1,11 @@
 package components
 
-import "ozkansen.com/internal/i18n"
+import (
+	"ozkansen.com/internal/content"
+	"ozkansen.com/internal/i18n"
+)
 
-templ Testimonials(tr *i18n.Translator) {
+templ Testimonials(tr *i18n.Translator, site *content.Site) {
 	<section id="reviews" class="py-24">
 		<div class="max-w-6xl mx-auto px-6">
 			<div class="mb-14">
@@ -11,47 +14,37 @@ templ Testimonials(tr *i18n.Translator) {
 			</div>
 
 			<div class="grid md:grid-cols-3 gap-6">
-				<blockquote class="reveal d1 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-7 border border-zinc-100 dark:border-zinc-800">
-					<div class="flex gap-0.5 mb-5" aria-label="5 stars">
-						@StarIcon() @StarIcon() @StarIcon() @StarIcon() @StarIcon()
-					</div>
-					<p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed mb-6 italic">{ tr.T("reviews.1.text") }</p>
-					<footer class="flex items-center gap-3">
-						<div class="pf w-10 h-10 rounded-full shrink-0"><img src="https://i.pravatar.cc/80?img=11" alt={ tr.T("reviews.1.name") } loading="lazy"/></div>
-						<div>
-							<p class="font-medium text-sm text-zinc-900 dark:text-white">{ tr.T("reviews.1.name") }</p>
-							<p class="text-xs text-zinc-500">{ tr.T("reviews.1.role") }</p>
-						</div>
-					</footer>
-				</blockquote>
-
-				<blockquote class="reveal d2 bg-zinc-900 dark:bg-zinc-800 rounded-2xl p-7 border border-zinc-800">
-					<div class="flex gap-0.5 mb-5" aria-label="5 stars">
-						@StarIcon() @StarIcon() @StarIcon() @StarIcon() @StarIcon()
-					</div>
-					<p class="text-zinc-400 text-sm leading-relaxed mb-6 italic">{ tr.T("reviews.2.text") }</p>
-					<footer class="flex items-center gap-3">
-						<div class="pf w-10 h-10 rounded-full shrink-0"><img src="https://i.pravatar.cc/80?img=52" alt={ tr.T("reviews.2.name") } loading="lazy"/></div>
-						<div>
-							<p class="font-medium text-sm text-white">{ tr.T("reviews.2.name") }</p>
-							<p class="text-xs text-zinc-500">{ tr.T("reviews.2.role") }</p>
-						</div>
-					</footer>
-				</blockquote>
-
-				<blockquote class="reveal d3 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-7 border border-zinc-100 dark:border-zinc-800">
-					<div class="flex gap-0.5 mb-5" aria-label="5 stars">
-						@StarIcon() @StarIcon() @StarIcon() @StarIcon() @StarIcon()
-					</div>
-					<p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed mb-6 italic">{ tr.T("reviews.3.text") }</p>
-					<footer class="flex items-center gap-3">
-						<div class="pf w-10 h-10 rounded-full shrink-0"><img src="https://i.pravatar.cc/80?img=47" alt={ tr.T("reviews.3.name") } loading="lazy"/></div>
-						<div>
-							<p class="font-medium text-sm text-zinc-900 dark:text-white">{ tr.T("reviews.3.name") }</p>
-							<p class="text-xs text-zinc-500">{ tr.T("reviews.3.role") }</p>
-						</div>
-					</footer>
-				</blockquote>
+				for i, review := range site.Testimonials {
+					if i%3 == 1 {
+						<blockquote class="reveal d2 bg-zinc-900 dark:bg-zinc-800 rounded-2xl p-7 border border-zinc-800">
+							<div class="flex gap-0.5 mb-5" aria-label="5 stars">
+								@StarIcon() @StarIcon() @StarIcon() @StarIcon() @StarIcon()
+							</div>
+							<p class="text-zinc-400 text-sm leading-relaxed mb-6 italic">{ review.Quote(string(tr.Locale())) }</p>
+							<footer class="flex items-center gap-3">
+								<div class="pf w-10 h-10 rounded-full shrink-0"><img src={ review.Img } alt={ review.Name } loading="lazy"/></div>
+								<div>
+									<p class="font-medium text-sm text-white">{ review.Name }</p>
+									<p class="text-xs text-zinc-500">{ review.Role(string(tr.Locale())) }</p>
+								</div>
+							</footer>
+						</blockquote>
+					} else {
+						<blockquote class="reveal d1 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-7 border border-zinc-100 dark:border-zinc-800">
+							<div class="flex gap-0.5 mb-5" aria-label="5 stars">
+								@StarIcon() @StarIcon() @StarIcon() @StarIcon() @StarIcon()
+							</div>
+							<p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed mb-6 italic">{ review.Quote(string(tr.Locale())) }</p>
+							<footer class="flex items-center gap-3">
+								<div class="pf w-10 h-10 rounded-full shrink-0"><img src={ review.Img } alt={ review.Name } loading="lazy"/></div>
+								<div>
+									<p class="font-medium text-sm text-zinc-900 dark:text-white">{ review.Name }</p>
+									<p class="text-xs text-zinc-500">{ review.Role(string(tr.Locale())) }</p>
+								</div>
+							</footer>
+						</blockquote>
+					}
+				}
 			</div>
 		</div>
 	</section>

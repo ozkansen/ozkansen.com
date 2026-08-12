@@ -1,0 +1,29 @@
+services:
+  - icon: laptop
+    title_tr: UI/UX Tasarım
+    title_en: UI/UX Design
+    text_tr: >-
+      Wireframe'lerden cilalanmış Figma prototiplerine. Ziyaretçileri kullanıcıya
+      dönüştüren, sezgisel ve görsel olarak etkileyici arayüzler — kullanılabilirlik
+      her zaman öncelikli.
+    text_en: >-
+      From wireframes to polished Figma prototypes. Intuitive, visually compelling
+      interfaces that convert visitors into users and put usability first.
+  - icon: code
+    title_tr: Frontend Geliştirme
+    title_en: Frontend Dev
+    text_tr: >-
+      Tailwind CSS ve Alpine.js ile üretim kalitesinde kod. Piksel kusursuz, tamamen
+      responsive, SEO dostu ve çok hızlı — şişkinlik yok, ağır framework yok.
+    text_en: >-
+      Production-grade code with Tailwind CSS and Alpine.js. Pixel-perfect, fully
+      responsive, SEO-friendly and blazing fast — no bloat, no heavy frameworks.
+  - icon: chart
+    title_tr: Landing Sayfaları
+    title_en: Landing Pages
+    text_tr: >-
+      SaaS, uygulama ve kişisel markalar için yüksek dönüşümlü sayfalar. Değeri anında
+      aktaran ve ilk kaydırmadan eyleme yönlendiren tasarımlar.
+    text_en: >-
+      High-converting pages for SaaS, apps and personal brands. Designed to communicate
+      value instantly and drive action from the first scroll.

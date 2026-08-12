@@ -9,12 +9,13 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"ozkansen.com/internal/content"
 	"ozkansen.com/internal/i18n"
 	"ozkansen.com/internal/views/components"
 	"ozkansen.com/internal/views/layout"
 )
 
-func Home(tr *i18n.Translator) templ.Component {
+func Home(tr *i18n.Translator, site *content.Site) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -47,7 +48,7 @@ func Home(tr *i18n.Translator) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = components.Hero(tr).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Hero(tr, site).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -55,7 +56,7 @@ func Home(tr *i18n.Translator) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Services(tr).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Services(tr, site).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -63,7 +64,7 @@ func Home(tr *i18n.Translator) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Work(tr).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Work(tr, site).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -71,7 +72,7 @@ func Home(tr *i18n.Translator) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.About(tr).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.About(tr, site).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -79,7 +80,7 @@ func Home(tr *i18n.Translator) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Testimonials(tr).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Testimonials(tr, site).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -87,7 +88,7 @@ func Home(tr *i18n.Translator) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Blog(tr).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Blog(tr, site).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

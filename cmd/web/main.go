@@ -12,6 +12,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
 
+	"ozkansen.com/internal/content"
 	"ozkansen.com/internal/handlers"
 	"ozkansen.com/internal/i18n"
 	"ozkansen.com/internal/middleware"
@@ -28,6 +29,12 @@ func main() {
 
 	slog.SetDefault(logger)
 
+	site, err := content.Load(content.LoadDir())
+	if err != nil {
+		slog.Error("İçerik yüklenemedi", slog.String("error", err.Error()))
+		log.Fatal(err)
+	}
+
 	mux := http.NewServeMux()
 
 	// 1. Statik Dosyalar
@@ -35,7 +42,9 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// 2. Sayfa ve API Route'ları
-	mux.HandleFunc("/", rootHandler)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		rootHandler(w, r, site)
+	})
 
 	mux.HandleFunc("/api/contact", handlers.Contact(logger))
 
@@ -63,7 +72,7 @@ func main() {
 //   - /        → /tr/ (varsayılan dile 301 yönlendirme)
 //   - /tr/     → Türkçe anasayfa
 //   - /en/     → İngilizce anasayfa
-func rootHandler(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request, site *content.Site) {
 	path := r.URL.Path
 
 	if path == "/" {
@@ -90,7 +99,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templ.Handler(pages.Home(tr)).ServeHTTP(w, r)
+	templ.Handler(pages.Home(tr, site)).ServeHTTP(w, r)
 }
 
 // statusFragment, /api/status uç noktasının HTMX fragment yanıtıdır.

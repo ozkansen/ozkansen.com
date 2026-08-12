@@ -1,8 +1,11 @@
 package components
 
-import "ozkansen.com/internal/i18n"
+import (
+	"ozkansen.com/internal/content"
+	"ozkansen.com/internal/i18n"
+)
 
-templ Hero(tr *i18n.Translator) {
+templ Hero(tr *i18n.Translator, site *content.Site) {
 	<section id="hero" class="relative min-h-screen flex items-center pt-16 overflow-hidden">
 		<div class="absolute top-1/4 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
 		<div class="absolute bottom-1/4 left-0 w-64 h-64 bg-zinc-200/50 dark:bg-zinc-800/30 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
@@ -25,9 +28,9 @@ templ Hero(tr *i18n.Translator) {
 						<a href="#contact" class="inline-flex items-center gap-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium px-7 py-3.5 rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors text-sm">{ tr.T("hero.cta.contact") }</a>
 					</div>
 					<div class="reveal d4 flex gap-8 mt-14 pt-8 border-t border-zinc-100 dark:border-zinc-900">
-						<div><p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">34+</p><p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{ tr.T("hero.stat.projects") }</p></div>
-						<div><p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">21+</p><p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{ tr.T("hero.stat.clients") }</p></div>
-						<div><p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">5y</p><p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{ tr.T("hero.stat.experience") }</p></div>
+						for _, stat := range site.Settings.Stats {
+								<div><p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">{ stat.Value }</p><p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{ stat.Label(string(tr.Locale())) }</p></div>
+						}
 					</div>
 				</div>
 

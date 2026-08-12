@@ -1,0 +1,28 @@
+paragraphs_tr:
+  - >-
+    Ben Özkan, İstanbul merkezli freelance tasarımcı ve frontend geliştirici.
+    Başlangıçlar, ajanslar ve scale-up'lar için dijital ürünler geliştirirken
+    harika tasarım ile temiz kodun kesişiminde çalışıyorum.
+  - >-
+    En iyi arayüzlerin görünmez olduğuna inanıyorum — kullanıcının yolundan
+    çekilirler. Çalışmalarım hızlı, erişilebilir ve uzun ömürlüdür. Kod yazmadığımda
+    yürüyüş yaparken ya da iyi bir kahve peşinde bulabilirsiniz beni.
+paragraphs_en:
+  - >-
+    I'm Özkan, a freelance designer and frontend developer based in Paris with
+    5 years of experience shipping digital products for startups, agencies, and
+    scale-ups across Europe. I thrive at the intersection of great design and
+    clean code.
+  - >-
+    I believe great interfaces are invisible — they get out of the user's way.
+    My work is fast, accessible and built to last. When I'm not coding, you'll
+    find me hiking or hunting for a good espresso.
+skills:
+  - Tailwind CSS
+  - Alpine.js
+  - Figma
+  - HTML / CSS
+  - JavaScript
+  - Go
+  - React
+  - PostgreSQL

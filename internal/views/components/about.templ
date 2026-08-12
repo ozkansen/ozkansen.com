@@ -1,8 +1,11 @@
 package components
 
-import "ozkansen.com/internal/i18n"
+import (
+	"ozkansen.com/internal/content"
+	"ozkansen.com/internal/i18n"
+)
 
-templ About(tr *i18n.Translator) {
+templ About(tr *i18n.Translator, site *content.Site) {
 	<section id="about" class="py-24 bg-zinc-50 dark:bg-zinc-900/40">
 		<div class="max-w-6xl mx-auto px-6">
 			<div class="grid md:grid-cols-2 gap-16 items-center">
@@ -14,19 +17,19 @@ templ About(tr *i18n.Translator) {
 				<div class="order-1 md:order-2">
 					<p class="reveal text-xs font-medium text-accent tracking-widest uppercase mb-3">{ tr.T("about.eyebrow") }</p>
 					<h2 class="reveal d1 font-display font-bold text-4xl md:text-5xl text-zinc-900 dark:text-white leading-tight mb-6">{ tr.T("about.title1") }<br/>{ tr.T("about.title2") }</h2>
-					<p class="reveal d2 text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ tr.T("about.p1") }</p>
-					<p class="reveal d3 text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">{ tr.T("about.p2") }</p>
+					for i, paragraph := range site.About.Paragraphs(string(tr.Locale())) {
+						if i == 0 {
+							<p class="reveal d2 text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">{ paragraph }</p>
+						} else {
+							<p class="reveal d3 text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">{ paragraph }</p>
+						}
+					}
 					<div class="reveal d4">
 						<p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-3">{ tr.T("about.stack") }</p>
 						<div class="flex flex-wrap gap-2" role="list" aria-label="Skills">
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">Tailwind CSS</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">Alpine.js</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">Figma</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">HTML / CSS</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">JavaScript</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">Go</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">React</span>
-							<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">PostgreSQL</span>
+							for _, skill := range site.About.Skills {
+								<span role="listitem" class="stag text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3.5 py-1.5 rounded-full hover:border-accent">{ skill }</span>
+							}
 						</div>
 					</div>
 				</div>

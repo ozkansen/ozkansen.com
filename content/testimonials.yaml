@@ -1,0 +1,31 @@
+testimonials:
+  - name: Sarah Müller
+    role_tr: CPO, Novu
+    role_en: CPO, Novu
+    img: https://i.pravatar.cc/80?img=11
+    quote_tr: >-
+      "Özkan, yeniden tasarımımızı rekor sürede teslim etti ve kalite bizi büyüledi.
+      İlk ay dönüşüm oranımız %28 arttı. Kesinlikle tavsiye ederim."
+    quote_en: >-
+      "Özkan delivered our redesign in record time and the quality blew us away.
+      Our conversion rate jumped 28% in the first month. Absolutely recommend."
+  - name: Thomas Renault
+    role_tr: Kurucu, Finlo
+    role_en: Founder, Finlo
+    img: https://i.pravatar.cc/80?img=52
+    quote_tr: >-
+      "Özkan ile çalışmak bir rüya. Doğru soruları soruyor, hızlı hareket ediyor
+      ve sonuç her zaman hayal ettiklerimizi aşıyor. 2024'ün en iyi işe alımı."
+    quote_en: >-
+      "Working with Özkan is a dream. He asks the right questions, moves fast, and
+      the final result always exceeds what we imagined. Our best hire of 2024."
+  - name: Camille Dufresne
+    role_tr: Yaratıcı Direktör, Orea
+    role_en: Creative Director, Orea
+    img: https://i.pravatar.cc/80?img=47
+    quote_tr: >-
+      "Çok sıkı bir teslim tarihi ve belirsiz bir brief vardı. Özkan ikisini de iki
+      haftadan kısa sürede cilalı bir siteye dönüştürdü. Temiz kod, sıfır el tutma."
+    quote_en: >-
+      "We had a tight deadline and a vague brief. Özkan turned both into a polished
+      site in under two weeks. Clean code, zero hand-holding needed."
