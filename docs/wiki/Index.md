@@ -46,7 +46,7 @@ flowchart LR
 ## Node Listesi
 
 ### Delivery Katmanı
-- [[WebServer]] — giriş noktası, `ServeMux`, route tanımları (API'de GET guard'ı), `http.Server` timeout'ları, middleware sarmalama
+- [[WebServer]] — giriş noktası, chi v5 router (`r.Get` metot kayıtları → otomatik 405), `http.Server` timeout'ları, `r.Use` middleware
 - [[LoggingMiddleware]] — istek/yanıt loglama, `responseWriter` sarmalayıcı (WriteHeader/WriteString/Flush/Hijack/Push/Unwrap ileri taşıma), seviye mantığı
 - [[HTTPUtil]] — `httputil.WriteHTML`: Content-Type + durum kodu ile HTML yanıtı yazımı, commit sonrası hata loglama
 - [[TemplViews]] — templ view katmanı: `layout.Base` iskeleti + `pages.Home` sayfası

@@ -84,26 +84,13 @@ func SecureHeaders(next http.Handler) http.Handler {
 
 Zincirleme: `SecureHeaders(middleware.Logger(logger)(mux))`. Not: CSP'de inline script kullanılmadığından (`layout.Base` yalnızca yerel dosya referansları içerir) `'unsafe-inline'` gerekmez; HTMX `hx-*` attribute'ları CSP ile çelişmez.
 
-### I3 — `/api/status` metot guard'ı `[MEDIUM]` → [[WebServer]] — ✅ UYGULANDI (2026-08-22)
+### I3 — `/api/status` metot guard'ı `[MEDIUM]` → [[WebServer]] — ✅ KAPANDI (chi geçişiyle, 2026-08-22)
 
-**Önemli ders:** İlk önerilen `mux.HandleFunc("GET /api/status", ...)` metot deseni tek başına **yetersizdi**: catch-all `/` route'u mevcutken ServeMux en spesifik *eşleşen* deseni seçer; POST istekleri `GET /api/status` ile eşleşmez ve `/`'e düşerek 200 dönerdi (405 yalnızca hiçbir desen eşleşmezken üretilir). Bu davranış httptest deneyiyle doğrulandı.
+**Tarihçe:** ServeMux döneminde önce `mux.HandleFunc("GET /api/status", ...)` metot deseni denendi; catch-all `/` route'u POST isteklerini kendi altına düşürdüğü için işe yaramadı (ServeMux yalnızca hiçbir desen eşleşmezken 405 üretir; httptest deneyiyle kanıtlandı). Geçici olarak handler içi guard kullanıldı.
 
-**Uygulanan nihai çözüm:** Düz path deseni (`"/api/status"`) + handler içinde metot guard'ı — catch-all'un varlığından bağımsız olarak çalışır:
+**Nihai durum:** Router **chi v5**'e geçirildi. chi'de metot-kayıtlı route'lar (`r.Get`) diğer metotlara otomatik `405 Method Not Allowed + Allow: GET` döndürür ve catch-all önceliği tuzağı yoktur → handler içindeki guard kaldırıldı, çözüm router seviyesine indi.
 
-```go
-func apiStatusHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			w.Header().Set("Allow", http.MethodGet)
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		httputil.WriteHTML(w, http.StatusOK, statusFragment)
-	}
-}
-```
-
-Doğrulama: GET → 200 + fragment; POST/DELETE/OPTIONS → `405 Method Not Allowed` + `Allow: GET` header.
+Doğrulama: GET → 200 + fragment; POST/DELETE → `405 + Allow: GET`; bilinmeyen yol → `404`.
 
 ### I4 — Statik varlıkları gömme (`go:embed`) `[MEDIUM]` → [[StaticAssets]]
 

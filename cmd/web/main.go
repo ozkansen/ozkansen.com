@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/go-chi/chi/v5"
 	"github.com/lmittmann/tint"
 
 	"ozkansen.com/internal/httputil"
@@ -24,25 +25,26 @@ func main() {
 
 	slog.SetDefault(logger)
 
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
+
+	// Middleware zinciri: stdlib uyumlu imza (func(http.Handler) http.Handler) doğrudan Use ile takılır.
+	// Not: chi'de tüm Use çağrıları route kayıtlarından ÖNCE yapılmalıdır.
+	r.Use(middleware.Logger(logger))
 
 	// 1. Statik Dosyalar
 	fs := http.FileServer(http.Dir("./static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	// 2. Sayfa ve API Route'ları
-	mux.Handle("/", templ.Handler(pages.Home("Özkan")))
-
-	mux.HandleFunc("/api/status", apiStatusHandler())
-
-	// Middleware zincirini uygula
-	loggingMiddleware := middleware.Logger(logger)
-	handlerWithLogging := loggingMiddleware(mux)
+	// chi'de metot-kayıtlı route'lar diğer metotlara otomatik 405 + Allow döner;
+	// bilinmeyen yollar NotFound handler'a (404) gider — catch-all önceliği tuzağı yoktur.
+	r.Get("/", templ.Handler(pages.Home("Özkan")).ServeHTTP)
+	r.Get("/api/status", apiStatusHandler)
 
 	logger.Info("Sunucu başlatılıyor", slog.String("port", ":8080"))
 	server := &http.Server{
 		Addr:              ":8080",
-		Handler:           handlerWithLogging,
+		Handler:           r,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
@@ -58,16 +60,8 @@ func main() {
 const statusFragment = `<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`
 
 // apiStatusHandler, HTMX istekleri için tam sayfa yerine yalnızca
-// statusFragment HTML parçasını döndürür. Yalnızca GET kabul edilir;
-// "GET /api/status" metot deseni, catch-all "/" route'u varken diğer
-// metotları kendi altına düşürdüğünden (ServeMux önceliği) guard burada tutulur.
-func apiStatusHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			w.Header().Set("Allow", http.MethodGet)
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		httputil.WriteHTML(w, http.StatusOK, statusFragment)
-	}
+// statusFragment HTML parçasını döndürür. Route `r.Get` ile kayıtlıdır;
+// diğer metotlara chi router otomatik olarak 405 Method Not Allowed + Allow döner.
+func apiStatusHandler(w http.ResponseWriter, _ *http.Request) {
+	httputil.WriteHTML(w, http.StatusOK, statusFragment)
 }

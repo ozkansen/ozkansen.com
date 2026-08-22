@@ -43,7 +43,7 @@ flowchart LR
 | ID | Seviye | Bulgu | Modül | OWASP |
 |---|---|---|---|---|
 | S1 | [MEDIUM] | Güvenlik header'ları hiçbir yanıtta set edilmiyor: CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy | [[WebServer]] | A05:Security Misconfiguration |
-| S2 | [MEDIUM] ✅ Çözüldü (2026-08-22) | `/api/status` route'u metot kontrolü yapmıyordu; handler içi guard eklendi — non-GET artık `405 + Allow: GET` döner (bkz. [[Improvements]] I3) | [[WebServer]] | A01:Broken Access Control |
+| S2 | [MEDIUM] ✅ Çözüldü (2026-08-22) | `/api/status` route'u metot kontrolü yapmıyordu; **chi v5 geçişiyle** `r.Get` kaydı diğer metotlara otomatik `405 + Allow: GET` döner (bkz. [[Improvements]] I3) | [[WebServer]] | A01:Broken Access Control |
 | S3 | [LOW] | `http.FileServer` `/static/css/` ve `/static/js/` altında dizin listelemesi sunuyor (bilinç sızması) | [[StaticAssets]] | A05:Security Misconfiguration |
 | S4 | [LOW] | Log injection: `User-Agent` ve path ham haliyle loglanıyor; kontrol karakterleriyle sahte log satırı üretilebilir | [[LoggingMiddleware]] | A09:Security Logging Failures |
 | S5 | [LOW] | Loglarda `remote_ip` (PII) saklanıyor; retention/anonimleştirme politikası tanımlı değil (GDPR notu) | [[LoggingMiddleware]] | A09:Security Logging Failures |
@@ -80,7 +80,7 @@ Denetlenen ve **sorun bulunmayan** alanlar — regresyon izlemede referans olmas
 - **Concurrency:** Goroutine spawn edilmemiş, paylaşımlı state/kilit yok → sızıntı/deadlock potansiyeli yok.
 - **N+1 / veritabanı:** Veritabanı erişimi yok.
 - **Timeout'lar:** `http.Server` timeout seti eksiksiz (`ReadHeaderTimeout` dahil — gosec G114 uyumlu).
-- **Bağımlılık sağlığı:** Yalnızca 2 direkt bağımlılık (`templ`, `tint`), `go.sum` ile pinli; JS kütüphaneleri versiyonlu yerel kopya ([[StaticAssets]]) → supply-chain yüzeyi minimal.
+- **Bağımlılık sağlığı:** Yalnızca 3 direkt bağımlılık (`templ`, `tint`, `chi v5` — 2026-08-22'de router olarak eklendi), `go.sum` ile pinli; JS kütüphaneleri versiyonlu yerel kopya ([[StaticAssets]]) → supply-chain yüzeyi minimal.
 - **Statik analiz:** `gosec`, `noctx`, `bodyclose` [[Linting]] konfigürasyonunda aktif.
 
 ### Bulguların modüllere dağılımı
