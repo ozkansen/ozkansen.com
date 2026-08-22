@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
 
+	"ozkansen.com/internal/httputil"
 	"ozkansen.com/internal/middleware"
 	"ozkansen.com/internal/views/pages"
 )
@@ -33,7 +33,7 @@ func main() {
 	// 2. Sayfa ve API Route'ları
 	mux.Handle("/", templ.Handler(pages.Home("Özkan")))
 
-	mux.HandleFunc("/api/status", apiStatusHandler(logger))
+	mux.HandleFunc("/api/status", apiStatusHandler())
 
 	// Middleware zincirini uygula
 	loggingMiddleware := middleware.Logger(logger)
@@ -59,16 +59,8 @@ const statusFragment = `<div id="status-box" class="p-4 bg-emerald-950/60 text-e
 
 // apiStatusHandler, HTMX istekleri için tam sayfa yerine yalnızca
 // statusFragment HTML parçasını döndürür.
-func apiStatusHandler(logger *slog.Logger) http.HandlerFunc {
+func apiStatusHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		// Durum kodu gövde yazılmadan önce açıkça set edilir;
-		// böylece yanıt commit edilmeden önce hata yakalanabilir.
-		w.WriteHeader(http.StatusOK)
-		if _, err := io.WriteString(w, statusFragment); err != nil {
-			// Yanıt zaten commit edildiği için durum kodu değiştirilemez;
-			// yazma hatası (genelde bağlantı kopması) ancak loglanır.
-			logger.Error("Status yanıtı yazılamadı", slog.String("error", err.Error()))
-		}
+		httputil.WriteHTML(w, http.StatusOK, statusFragment)
 	}
 }

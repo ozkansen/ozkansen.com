@@ -3,6 +3,7 @@ package middleware
 import (
 	"bufio"
 	"errors"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -32,6 +33,17 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 		rw.status = http.StatusOK
 	}
 	n, err := rw.ResponseWriter.Write(b)
+	rw.bytesWritten += n
+	return n, err
+}
+
+// WriteString, io.StringWriter arayüzünü ileri taşır; böylece io.WriteString
+// çağrıları []byte dönüşümü yapmadan temel ResponseWriter'a ulaşır.
+func (rw *responseWriter) WriteString(s string) (int, error) {
+	if rw.status == 0 {
+		rw.status = http.StatusOK
+	}
+	n, err := io.WriteString(rw.ResponseWriter, s)
 	rw.bytesWritten += n
 	return n, err
 }
