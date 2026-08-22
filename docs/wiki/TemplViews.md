@@ -1,7 +1,7 @@
 ---
 layer: delivery
-dependencies: [WebServer, StaticAssets]
-last_updated: 2026-07-31
+dependencies: [WebServer, StaticAssets, HTTPUtil]
+last_updated: 2026-08-22
 ---
 
 # TemplViews
@@ -10,7 +10,7 @@ last_updated: 2026-07-31
 
 **Kütüphaneler:** `github.com/a-h/templ` (type-safe HTML template engine), Tailwind CSS sınıfları.
 
-**Bağlantılar:** [[WebServer]] · [[StaticAssets]] · [[Index]]
+**Bağlantılar:** [[WebServer]] · [[StaticAssets]] · [[HTTPUtil]] · [[Index]]
 
 **Dosyalar:**
 - `internal/views/layout/base.templ` (+ üretilen `base_templ.go`)
@@ -27,7 +27,7 @@ flowchart TD
     Route["GET / → templ.Handler(pages.Home)"] --> Home[pages.Home]
     Home -->|"içerik / children"| Base[layout.Base]
 
-    Base --> Head["<head>: meta, title, CSS, htmx.min.js, cdn.min.js (Alpine)"]
+    Base --> Head["<head>: meta, title, styles.css, htmx_2.0.10.min.js, alpinejs_3.16.2.min.js"]
     Base --> Header["header: Personal Space logo + nav (Anasayfa / Projeler)"]
     Base --> Main["main: children slot"]
     Base --> Footer["footer: © 2026"]
@@ -43,7 +43,7 @@ flowchart TD
 - `Base(title string) templ.Component` → tek parametre alır, `<title>` etiketini besler.
 - İçeriği `<main>` içindeki `children...` slot'una basar. Bu desen sayesinde her sayfa ortak iskeleti yeniden yazmaz.
 - Footer ve header içinde sabit bağlantılar vardır: `/` (Anasayfa) ve `/projects` (Projeler). `/projects` için henüz route yok ([[WebServer]] notuna bakın).
-- Statik bağımlılıklar: `/static/css/styles.css`, `/static/js/htmx.min.js`, `/static/js/cdn.min.js`.
+- Statik bağımlılıklar: `/static/css/styles.css`, `/static/js/htmx_2.0.10.min.js`, `/static/js/alpinejs_3.16.2.min.js` (versiyonlu dosya adları, `defer` ile yüklenir; bkz. [[StaticAssets]]).
 
 ### pages.Home
 
