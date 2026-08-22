@@ -2,6 +2,7 @@
 node_modules/
 tmp/
 main
+.DS_Store
 
 # Created by https://www.toptal.com/developers/gitignore/api/go,linux,jetbrains+all,visualstudiocode,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,linux,jetbrains+all,visualstudiocode,node
