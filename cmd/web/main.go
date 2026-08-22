@@ -58,9 +58,16 @@ func main() {
 const statusFragment = `<div id="status-box" class="p-4 bg-emerald-950/60 text-emerald-300 rounded-lg">🚀 Sunucu Aktif!</div>`
 
 // apiStatusHandler, HTMX istekleri için tam sayfa yerine yalnızca
-// statusFragment HTML parçasını döndürür.
+// statusFragment HTML parçasını döndürür. Yalnızca GET kabul edilir;
+// "GET /api/status" metot deseni, catch-all "/" route'u varken diğer
+// metotları kendi altına düşürdüğünden (ServeMux önceliği) guard burada tutulur.
 func apiStatusHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.Header().Set("Allow", http.MethodGet)
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 		httputil.WriteHTML(w, http.StatusOK, statusFragment)
 	}
 }

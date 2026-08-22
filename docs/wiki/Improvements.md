@@ -84,15 +84,26 @@ func SecureHeaders(next http.Handler) http.Handler {
 
 Zincirleme: `SecureHeaders(middleware.Logger(logger)(mux))`. Not: CSP'de inline script kullanılmadığından (`layout.Base` yalnızca yerel dosya referansları içerir) `'unsafe-inline'` gerekmez; HTMX `hx-*` attribute'ları CSP ile çelişmez.
 
-### I3 — `/api/status` metot guard'ı `[MEDIUM]` → [[WebServer]]
+### I3 — `/api/status` metot guard'ı `[MEDIUM]` → [[WebServer]] — ✅ UYGULANDI (2026-08-22)
 
-Go 1.22+ ServeMux metot desenlerini destekler; en idiomatik çözüm ek middleware yerine route tanımını değiştirmektir:
+**Önemli ders:** İlk önerilen `mux.HandleFunc("GET /api/status", ...)` metot deseni tek başına **yetersizdi**: catch-all `/` route'u mevcutken ServeMux en spesifik *eşleşen* deseni seçer; POST istekleri `GET /api/status` ile eşleşmez ve `/`'e düşerek 200 dönerdi (405 yalnızca hiçbir desen eşleşmezken üretilir). Bu davranış httptest deneyiyle doğrulandı.
+
+**Uygulanan nihai çözüm:** Düz path deseni (`"/api/status"`) + handler içinde metot guard'ı — catch-all'un varlığından bağımsız olarak çalışır:
 
 ```go
-mux.HandleFunc("GET /api/status", apiStatusHandler())
+func apiStatusHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.Header().Set("Allow", http.MethodGet)
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		httputil.WriteHTML(w, http.StatusOK, statusFragment)
+	}
+}
 ```
 
-Diğer metotlar otomatik olarak `405 Method Not Allowed` döner.
+Doğrulama: GET → 200 + fragment; POST/DELETE/OPTIONS → `405 Method Not Allowed` + `Allow: GET` header.
 
 ### I4 — Statik varlıkları gömme (`go:embed`) `[MEDIUM]` → [[StaticAssets]]
 
@@ -125,10 +136,10 @@ func sanitize(s string) string {
 
 Ayrıca S5 (IP/PII): kamuya açık dağıtımda IP'nin son octet'inin maskelenmesi ya da log retention süresinin belgelenmesi önerilir.
 
-### I6 — Repo hijyeni `[LOW]`
+### I6 — Repo hijyeni `[LOW]` — ✅ KAPANDI (2026-08-22)
 
-- `.gitignore`'a `.DS_Store` ekle.
-- Working tree'deki minified `styles.css` artifact'ini commit et ya da `make build` sonrası geri al (karar sahibine ait).
+- [x] `.gitignore`'a `.DS_Store` eklendi.
+- [x] Minified `styles.css` artifact'i karar sahibi tarafından commitlendi.
 
 ### I7 — `apiStatusHandler` basitleştirme `[LOW]` → [[WebServer]]
 

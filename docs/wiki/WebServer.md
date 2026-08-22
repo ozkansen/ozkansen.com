@@ -1,7 +1,7 @@
 ---
 layer: delivery
 dependencies: [LoggingMiddleware, TemplViews, StaticAssets, HTTPUtil]
-security_risk: [security-headers-missing, api-method-not-restricted]
+security_risk: [security-headers-missing]
 tech_debt: [graceful-shutdown-missing, cwd-relative-static-path, apistatus-handler-indirection]
 last_updated: 2026-08-22
 ---
@@ -27,7 +27,7 @@ Uygulama, kişisel bir web sitesini sunan minimal bir Go web sunucusudur. Katman
 2. **Router:** `http.NewServeMux()` ile çoklayıcı oluşturulur.
 3. **Statik dosyalar:** `./static` dizini `/static/` prefix'i altında servis edilir (`http.StripPrefix` ile prefix kırpılır).
 4. **Sayfa route'u:** `/` → `templ.Handler(pages.Home("Özkan"))` ile anasayfa render edilir.
-5. **API route'u:** `/api/status` → HTMX istekleri için sadece bir HTML parçası (fragment) döner; tam sayfa render edilmez. Yanıt `httputil.WriteHTML(w, http.StatusOK, statusFragment)` ile yazılır (bkz. [[HTTPUtil]]).
+5. **API route'u:** `/api/status` → HTMX istekleri için sadece bir HTML parçası (fragment) döner; tam sayfa render edilmez. Yanıt `httputil.WriteHTML(w, http.StatusOK, statusFragment)` ile yazılır (bkz. [[HTTPUtil]]). Handler yalnızca GET kabul eder; diğer metotlar `405 Method Not Allowed` + `Allow: GET` döner (catch-all `/` route'u ServeMux metot desenini geçersiz kıldığı için guard handler içindedir — bkz. [[Improvements]] I3).
 6. **Middleware zinciri:** `middleware.Logger(logger)` ile sarmalanan mux, `http.Server` yapısıyla `ListenAndServe` edilir.
 7. **Sunucu timeout'ları:** `ReadHeaderTimeout: 10s`, `ReadTimeout: 30s`, `WriteTimeout: 30s`, `IdleTimeout: 60s` — `http.Server` struct'ı üzerinden tanımlanır (gosec G114 uyarısını giderir; bağlantı tabanlı saldırılara karşı koruma sağlar).
 

@@ -32,7 +32,7 @@ flowchart LR
     MW --> MUX["ServeMux"]
 
     MUX -->|"GET /*"| H1["templ.Handler(pages.Home)<br/>girdi: sabit 'Özkan'"]
-    MUX -->|"HERHANGİ BİR METHOD ⚠️"| H2["/api/status<br/>girdi: yok"]
+    MUX -->|"GET /api/status"| H2["/api/status (metot guard'ı ✅)<br/>girdi: yok"]
     MUX -->|"GET /static/*"| FS["http.FileServer(./static) ⚠️<br/>dizin listeleme açık"]
 
     H2 --> U[[HTTPUtil]]
@@ -43,7 +43,7 @@ flowchart LR
 | ID | Seviye | Bulgu | Modül | OWASP |
 |---|---|---|---|---|
 | S1 | [MEDIUM] | Güvenlik header'ları hiçbir yanıtta set edilmiyor: CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy | [[WebServer]] | A05:Security Misconfiguration |
-| S2 | [MEDIUM] | `/api/status` route'u metot kontrolü yapmıyor; GET dışındaki tüm metotlar da fragment döner | [[WebServer]] | A01:Broken Access Control |
+| S2 | [MEDIUM] ✅ Çözüldü (2026-08-22) | `/api/status` route'u metot kontrolü yapmıyordu; handler içi guard eklendi — non-GET artık `405 + Allow: GET` döner (bkz. [[Improvements]] I3) | [[WebServer]] | A01:Broken Access Control |
 | S3 | [LOW] | `http.FileServer` `/static/css/` ve `/static/js/` altında dizin listelemesi sunuyor (bilinç sızması) | [[StaticAssets]] | A05:Security Misconfiguration |
 | S4 | [LOW] | Log injection: `User-Agent` ve path ham haliyle loglanıyor; kontrol karakterleriyle sahte log satırı üretilebilir | [[LoggingMiddleware]] | A09:Security Logging Failures |
 | S5 | [LOW] | Loglarda `remote_ip` (PII) saklanıyor; retention/anonimleştirme politikası tanımlı değil (GDPR notu) | [[LoggingMiddleware]] | A09:Security Logging Failures |
@@ -66,7 +66,7 @@ flowchart LR
 | ID | Seviye | Bulgu | Kapsam |
 |---|---|---|---|
 | Q1 | [LOW] | `apiStatusHandler()` fabrika fonksiyonu, sabit bir fragment için gereksiz dolaylama katmanı ekliyor | [[WebServer]] |
-| Q2 | [LOW] | Repo hijyeni: `.DS_Store` `.gitignore`'da tanımlı değil (macOS artifact'leri takip riski); working tree'de commitlenmemiş minified `styles.css` duruyor | repository geneli |
+| Q2 | [LOW] ✅ Çözüldü (2026-08-22) | Repo hijyeni: `.DS_Store` `.gitignore`'a eklendi; minified `styles.css` commitlendi | repository geneli |
 
 Karmaşıklık analizi: Tüm fonksiyonların siklomatik karmaşıklığı düşük (en yükseği `Logger` middleware'i ~5). Katman sınırları ihlal edilmemiş; delivery katmanı içi bağımlılıklar tek yönlü ve temiz ([[Index]] bağımlılık grafiğine uygun). DRY ihlali tespit edilmedi.
 
