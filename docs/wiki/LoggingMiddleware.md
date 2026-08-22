@@ -1,6 +1,8 @@
 ---
 layer: delivery
 dependencies: [WebServer]
+security_risk: [log-injection-untrusted-headers, pii-ip-in-logs]
+tech_debt: []
 last_updated: 2026-08-22
 ---
 

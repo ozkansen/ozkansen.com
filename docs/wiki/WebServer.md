@@ -1,6 +1,8 @@
 ---
 layer: delivery
 dependencies: [LoggingMiddleware, TemplViews, StaticAssets, HTTPUtil]
+security_risk: [security-headers-missing, api-method-not-restricted]
+tech_debt: [graceful-shutdown-missing, cwd-relative-static-path, apistatus-handler-indirection]
 last_updated: 2026-08-22
 ---
 

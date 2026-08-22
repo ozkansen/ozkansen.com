@@ -21,6 +21,8 @@ flowchart LR
     subgraph Tooling
         DevTooling
         Linting
+        Security_Audit
+        Improvements
     end
 
     Client[İstemci] --> WebServer
@@ -35,6 +37,10 @@ flowchart LR
     DevTooling --> Linting
     Linting --> WebServer
     Linting --> TemplViews
+    Security_Audit --> WebServer
+    Security_Audit --> LoggingMiddleware
+    Security_Audit --> StaticAssets
+    Security_Audit --> Improvements
 ```
 
 ## Node Listesi
@@ -49,6 +55,8 @@ flowchart LR
 ### Araçlar / Süreç
 - [[DevTooling]] — `Makefile` (dev/build/lint) + `.air.toml` hot-reload pipeline
 - [[Linting]] — golangci-lint v2 konfigürasyonu: linter seti, ayarlar, exclusions, gofumpt/gci formatter'ları
+- [[Security_Audit]] — OWASP + performans denetim raporu (2026-08-22): bulgular seviyelere göre listeli, temiz alanlar belgeli
+- [[Improvements]] — denetimden çıkan önceliklendirilmiş çözüm backlog'u (P1 graceful shutdown → P3 hijyen)
 
 ## Bağımlılık Grafiği
 
@@ -86,7 +94,7 @@ sequenceDiagram
     C->>MW: GET /api/status (HTMX fragment)
     MW->>M: loglama
     M->>U: WriteHTML(w, 200, fragment div#status-box)
-    U-->>MW: text/html; charset=utf-8 yanıtı
+    U-->>MW: text/html#59; charset=utf-8 yanıtı
     MW-->>C: yanıt (HTML fragment)
 ```
 
@@ -99,3 +107,5 @@ sequenceDiagram
 5. Stillerin nasıl derlendiği için → [[StaticAssets]]
 6. Geliştirme/üretim pipeline'ı için → [[DevTooling]]
 7. Lint kural ve istisnaları için → [[Linting]]
+8. Güvenlik/performans riskleri ve temiz alanlar için → [[Security_Audit]]
+9. Risk giderme planı ve refactor sırası için → [[Improvements]]

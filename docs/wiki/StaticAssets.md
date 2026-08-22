@@ -1,6 +1,8 @@
 ---
 layer: delivery
 dependencies: [TemplViews, WebServer]
+security_risk: [directory-listing-enabled]
+tech_debt: []
 last_updated: 2026-08-22
 ---
 
