@@ -42,7 +42,7 @@ flowchart LR
 
 | ID | Seviye | Bulgu | Modül | OWASP |
 |---|---|---|---|---|
-| S1 | [MEDIUM] | Güvenlik header'ları hiçbir yanıtta set edilmiyor: CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy | [[WebServer]] | A05:Security Misconfiguration |
+| S1 | [MEDIUM] ✅ Çözüldü (2026-08-22) | Güvenlik header'ları hiçbir yanıtta set edilmiyordu; [[SecureHeaders]] middleware eklendi (CSP + nosniff + DENY + Referrer-Policy; Alpine için `'unsafe-eval'` notu bkz. [[Improvements]] I2) | [[WebServer]] | A05:Security Misconfiguration |
 | S2 | [MEDIUM] ✅ Çözüldü (2026-08-22) | `/api/status` route'u metot kontrolü yapmıyordu; **chi v5 geçişiyle** `r.Get` kaydı diğer metotlara otomatik `405 + Allow: GET` döner (bkz. [[Improvements]] I3) | [[WebServer]] | A01:Broken Access Control |
 | S3 | [LOW] | `http.FileServer` `/static/css/` ve `/static/js/` altında dizin listelemesi sunuyor (bilinç sızması) | [[StaticAssets]] | A05:Security Misconfiguration |
 | S4 | [LOW] | Log injection: `User-Agent` ve path ham haliyle loglanıyor; kontrol karakterleriyle sahte log satırı üretilebilir | [[LoggingMiddleware]] | A09:Security Logging Failures |

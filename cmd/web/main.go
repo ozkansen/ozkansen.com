@@ -29,6 +29,7 @@ func main() {
 
 	// Middleware zinciri: stdlib uyumlu imza (func(http.Handler) http.Handler) doğrudan Use ile takılır.
 	// Not: chi'de tüm Use çağrıları route kayıtlarından ÖNCE yapılmalıdır.
+	r.Use(middleware.SecureHeaders) // en dış: hata yanıtları dahil her yanıt korumalı
 	r.Use(middleware.Logger(logger))
 
 	// 1. Statik Dosyalar

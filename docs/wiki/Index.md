@@ -12,6 +12,7 @@ last_updated: 2026-08-22
 flowchart LR
     subgraph Delivery
         WebServer
+        SecureHeaders
         LoggingMiddleware
         HTTPUtil
         TemplViews
@@ -26,6 +27,7 @@ flowchart LR
     end
 
     Client[İstemci] --> WebServer
+    WebServer --> SecureHeaders
     WebServer --> LoggingMiddleware
     WebServer --> HTTPUtil
     WebServer --> TemplViews
@@ -47,6 +49,7 @@ flowchart LR
 
 ### Delivery Katmanı
 - [[WebServer]] — giriş noktası, chi v5 router (`r.Get` metot kayıtları → otomatik 405), `http.Server` timeout'ları, `r.Use` middleware
+- [[SecureHeaders]] — tüm yanıtlara güvenlik başlıkları (CSP + nosniff + DENY + Referrer-Policy); S1 çözümü
 - [[LoggingMiddleware]] — istek/yanıt loglama, `responseWriter` sarmalayıcı (WriteHeader/WriteString/Flush/Hijack/Push/Unwrap ileri taşıma), seviye mantığı
 - [[HTTPUtil]] — `httputil.WriteHTML`: Content-Type + durum kodu ile HTML yanıtı yazımı, commit sonrası hata loglama
 - [[TemplViews]] — templ view katmanı: `layout.Base` iskeleti + `pages.Home` sayfası
@@ -101,11 +104,12 @@ sequenceDiagram
 ## İnceleme Rehberi
 
 1. Uygulamanın nereden başladığını görmek için → [[WebServer]]
-2. Her isteğin nasıl loglandığını anlamak için → [[LoggingMiddleware]]
-3. HTML yanıtlarının nasıl yazıldığı için → [[HTTPUtil]]
-4. Sayfa render ve component hiyerarşisi için → [[TemplViews]]
-5. Stillerin nasıl derlendiği için → [[StaticAssets]]
-6. Geliştirme/üretim pipeline'ı için → [[DevTooling]]
-7. Lint kural ve istisnaları için → [[Linting]]
-8. Güvenlik/performans riskleri ve temiz alanlar için → [[Security_Audit]]
-9. Risk giderme planı ve refactor sırası için → [[Improvements]]
+2. Yanıt güvenlik başlıkları için → [[SecureHeaders]]
+3. Her isteğin nasıl loglandığını anlamak için → [[LoggingMiddleware]]
+4. HTML yanıtlarının nasıl yazıldığı için → [[HTTPUtil]]
+5. Sayfa render ve component hiyerarşisi için → [[TemplViews]]
+6. Stillerin nasıl derlendiği için → [[StaticAssets]]
+7. Geliştirme/üretim pipeline'ı için → [[DevTooling]]
+8. Lint kural ve istisnaları için → [[Linting]]
+9. Güvenlik/performans riskleri ve temiz alanlar için → [[Security_Audit]]
+10. Risk giderme planı ve refactor sırası için → [[Improvements]]

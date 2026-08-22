@@ -64,25 +64,36 @@ logger.Info("Sunucu düzgün kapatıldı")
 
 **Etki:** Deploy/restart sırasında in-flight istekler tamamlanır; Docker/K8s `SIGTERM` akışıyla uyumlu hale gelir.
 
-### I2 — Security headers middleware `[MEDIUM]` → [[WebServer]]
+### I2 — Security headers middleware `[MEDIUM]` → [[WebServer]] — ✅ UYGULANDI (2026-08-22)
 
-Yeni bir küçük middleware ([[LoggingMiddleware]] kalıbında):
+**Orijinal önerideki hata (düzeltildi):** Aşağıda ilk yazılan `script-src 'self'` CSP'si **Alpine.js'i kırar** — Alpine, `x-data="{ open: false }"` ve `@click="open = !open"` ifadelerini çalışma zamanında `new Function()` ile derler (eval eşdeğeri) ve CSP bunu yasakladığında bileşenler sessizce çalışmaz. Bu yüzden `script-src`'ye `'unsafe-eval'` eklendi; buna karşılık **inline script ve harici kaynak yasağı korunur** (klasik XSS payload'ı `<script src=evil.com>` ve inline `<script>` enjeksiyonları hâlâ engellenir).
+
+**Uygulanan nihai çözüm** (`internal/middleware/secureheaders.go`, [[SecureHeaders]]):
 
 ```go
+r.Use(middleware.SecureHeaders) // chi zincirinde en dış konum
+
+// secureheaders.go
+const cspPolicy = "default-src 'self'; " +
+    "script-src 'self' 'unsafe-eval'; " +
+    "style-src 'self'; img-src 'self' data:; " +
+    "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+
 func SecureHeaders(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         h := w.Header()
         h.Set("X-Content-Type-Options", "nosniff")
-        h.Set("X-Frame-Options", "DENY")
+        h.Set("X-Frame-Options", "DENY") // modern karşılığı: frame-ancestors 'none'
         h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
-        h.Set("Content-Security-Policy",
-            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:")
+        h.Set("Content-Security-Policy", cspPolicy)
         next.ServeHTTP(w, r)
     })
 }
 ```
 
-Zincirleme: `SecureHeaders(middleware.Logger(logger)(mux))`. Not: CSP'de inline script kullanılmadığından (`layout.Base` yalnızca yerel dosya referansları içerir) `'unsafe-inline'` gerekmez; HTMX `hx-*` attribute'ları CSP ile çelişmez.
+**Kalan risk ve gelecek seçenekler:** `'unsafe-eval'` eval tabanlı sömürülere kapı aralar (dar bir zayıflık). Tamamen kapatmak için: (a) Alpine'in resmi CSP build'i (`@alpinejs/csp`) kullanılır ve ifadeler `Alpine.data()` kaydına taşınır, ya da (b) tek demo kartı için Alpine tamamen kaldırılır. Karar bir sonraki INGEST'te verilebilir.
+
+Doğrulama: `/` ve `/api/status` yanıtlarında 4 header set; 405 yanıtlarında da mevcut (zincir en dışta).
 
 ### I3 — `/api/status` metot guard'ı `[MEDIUM]` → [[WebServer]] — ✅ KAPANDI (chi geçişiyle, 2026-08-22)
 

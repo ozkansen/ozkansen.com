@@ -1,7 +1,7 @@
 ---
 layer: delivery
-dependencies: [LoggingMiddleware, TemplViews, StaticAssets, HTTPUtil]
-security_risk: [security-headers-missing]
+dependencies: [SecureHeaders, LoggingMiddleware, TemplViews, StaticAssets, HTTPUtil]
+security_risk: []
 tech_debt: [graceful-shutdown-missing, cwd-relative-static-path, apistatus-handler-indirection]
 last_updated: 2026-08-22
 ---
@@ -12,7 +12,7 @@ last_updated: 2026-08-22
 
 **Kütüphaneler:** Go standard library (`net/http`, `log/slog`, `os`, `time`), `github.com/go-chi/chi/v5` (router + metot bazlı route), `github.com/lmittmann/tint` (renkli text handler), `github.com/a-h/templ` (templ component handler), `ozkansen.com/internal/httputil`.
 
-**Bağlantılar:** [[LoggingMiddleware]] · [[TemplViews]] · [[StaticAssets]] · [[HTTPUtil]] · [[Linting]] · [[Index]]
+**Bağlantılar:** [[SecureHeaders]] · [[LoggingMiddleware]] · [[TemplViews]] · [[StaticAssets]] · [[HTTPUtil]] · [[Linting]] · [[Index]]
 
 **Dosyalar:**
 - `cmd/web/main.go`
@@ -25,7 +25,7 @@ Uygulama, kişisel bir web sitesini sunan minimal bir Go web sunucusudur. Katman
 
 1. **Logger kurulumu:** `slog` default logger olarak `tint.NewTextHandler(os.Stdout, ...)` ile atanır. `LevelDebug` seviyesi ve `time.Kitchen` zaman formatı kullanılır; bu sayede geliştirme ortamında renkli, okunabilir loglar üretilir.
 2. **Router:** `chi.NewRouter()` ile router oluşturulur (2026-08-22'de `http.ServeMux`'tan chi v5'e geçildi; gerekçe: metot bazlı route, otomatik 405/404 ve büyüme öngörüsü — bkz. [[Improvements]]).
-3. **Middleware:** `r.Use(middleware.Logger(logger))` — stdlib uyumlu imza doğrudan Use ile takılır. **Kural:** chi'de tüm `Use` çağrıları route kayıtlarından önce yapılmalıdır, aksi halde süreç başlangıçta panikler.
+3. **Middleware zinciri:** `r.Use(middleware.SecureHeaders)` (en dış — hata yanıtları dahil her yanıt güvenlik header'lı, bkz. [[SecureHeaders]]) + `r.Use(middleware.Logger(logger))`. stdlib uyumlu imzalar doğrudan Use ile takılır. **Kural:** chi'de tüm `Use` çağrıları route kayıtlarından önce yapılmalıdır, aksi halde süreç başlangıçta panikler.
 4. **Statik dosyalar:** `./static` dizini `/static/*` altında servis edilir (`http.StripPrefix` ile prefix kırpılır).
 5. **Sayfa route'u:** `/` → `r.Get("/", templ.Handler(pages.Home("Özkan")).ServeHTTP)` ile anasayfa render edilir.
 6. **API route'u:** `/api/status` → HTMX istekleri için sadece bir HTML parçası (fragment) döner; tam sayfa render edilmez. Yanıt `httputil.WriteHTML(w, http.StatusOK, statusFragment)` ile yazılır (bkz. [[HTTPUtil]]). Route `r.Get` ile kayıtlı olduğundan diğer metotlara chi otomatik olarak `405 Method Not Allowed` + `Allow: GET` döner — eski handler içi guard bu sayede kaldırıldı.
@@ -40,12 +40,12 @@ flowchart LR
     Client -->|"POST /api/status → 405"| Chi
     Client -->|"bilinmeyen yol → 404"| Chi
 
-    subgraph LoggerMW [r.Use: Logging Middleware]
-        RW[responseWriter sarmalayıcı] --> Next[Sonraki Handler]
+    subgraph MW [r.Use Zinciri]
+        SH[SecureHeaders] --> LMW[Logger / responseWriter]
     end
 
-    Chi --> LoggerMW
-    Next --> Routes[chi Route Tablosu]
+    Chi --> MW
+    LMW --> Routes[chi Route Tablosu]
 
     Routes -->|"GET /"| HomeHandler["templ.Handler(pages.Home)"]
     Routes -->|"GET /api/status"| APIHandler["apiStatusHandler"]
