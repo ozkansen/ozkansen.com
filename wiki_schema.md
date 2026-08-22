@@ -27,3 +27,11 @@ Oluşturduğun her Wiki sayfasının en üstünde şunlar ZORUNLUDUR:
 ## 3. Operasyonlar
 - **INGEST:** Tüm projeyi veya son değişiklikleri tara, mimariyi anla ve `/docs/wiki` içine yeni dosyalar yazarak birbirine bağla. Her Ingest sonrası `[[Index.md]]` dosyasını ana harita olarak güncelle.
 - **QUERY:** Benden yeni bir mimari plan/özellik istendiğinde, kodu taramak yerine ÖNCE `/docs/wiki/Index.md`'ye git, ilgili Wiki dosyalarını oku ve ona göre plan çıkar.
+- **LINT:** Kod tabanından silinmiş dosyaları tespit et, `/docs/wiki` içindeki eskiyen notları ve kırık Obsidian bağlantılarını temizle.
+- **AUDIT (Güvenlik ve İyileştirme Taraması):**
+  1. Kod tabanını OWASP standartları, Go/Backend en iyi pratikleri ve performans metrikleri açısından denetle:
+    - **Güvenlik:** Yetkilendirme açıkları, veri doğrulama eksiklikleri (sanitization), açıkta kalan secret/token'lar, güvensiz tip dönüşümleri, SQL/NoSQL enjeksiyon riskleri.
+    - **Performans & Stabilite:** N+1 sorgu problemleri, bellek/goroutine sızıntıları, kilitlenme (deadlock) potansiyelleri, eksik context/timeout kontrolleri.
+    - **Kod Kalitesi & Refactor:** DRY prensibi ihlalleri, yüksek karmaşıklık (cyclomatic complexity), mimari katman sınırlarının ihlali.
+  2. Tespit edilen bulguları `/docs/wiki/Security_Audit.md` ve `/docs/wiki/Improvements.md` dosyalarına kritiklik seviyelerine (`[CRITICAL]`, `[HIGH]`, `[MEDIUM]`, `[LOW]`) göre listele ve ilgili modül sayfalarına `[[Link]]` vererek bağla.
+  3. Riskli bulunan modülün kendi `.md` dosyasındaki `security_risk` ve `tech_debt` front-matter alanlarını güncelle.
