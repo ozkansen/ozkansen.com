@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -50,7 +49,8 @@ func main() {
 		IdleTimeout:       60 * time.Second,
 	}
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+		logger.Error("Sunucu başlatılamadı", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 }
 
