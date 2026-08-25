@@ -35,8 +35,9 @@ ENV CGO_ENABLED=0 \
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-    go build -ldflags='-w -s' -trimpath -o server ./cmd/web
+    go build -ldflags='-w -s' -trimpath -o ./dist/server ./cmd/web
 
+RUN cp -r static ./dist/static && rm -rf ./dist/static/css/input.css
 
 FROM debian:trixie-slim
 
