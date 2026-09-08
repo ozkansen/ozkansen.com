@@ -1,11 +1,11 @@
-FROM golang:1.27.0-trixie AS tools-templ
+FROM golang:1.27.1-trixie AS tools-templ
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
     go install github.com/a-h/templ/cmd/templ@latest
 
 
-FROM golang:1.27.0-trixie AS stage-1
+FROM golang:1.27.1-trixie AS stage-1
 WORKDIR /app
 
 COPY --from=tools-templ /go/bin/templ /usr/local/bin/templ
@@ -22,7 +22,7 @@ RUN npm install
 RUN npx tailwindcss -i ./static/css/input.css -o ./static/css/styles.css --minify
 
 
-FROM golang:1.27.0-trixie AS stage-3
+FROM golang:1.27.1-trixie AS stage-3
 WORKDIR /app
 
 COPY --from=stage-2 /app /app
