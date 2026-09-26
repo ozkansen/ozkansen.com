@@ -12,7 +12,6 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
-	"github.com/lmittmann/tint"
 
 	"ozkansen.com/internal/assets"
 	"ozkansen.com/internal/httputil"
@@ -27,13 +26,9 @@ import (
 const shutdownTimeout = 10 * time.Second
 
 func main() {
-	// Geliştirme ortamı için Text, Canlı (Prod) ortamı için JSON handler tercih edilebilir
-	logger := slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
-		Level:      slog.LevelDebug,
-		TimeFormat: time.Kitchen,
-		NoColor:    false,
-	}))
-
+	// APP_ENV=production ile JSON + Info seviyesine geçilir; aksi halde
+	// renkli metin + Debug seviyesi kullanılır.
+	logger := newLogger(os.Getenv("APP_ENV"), os.Stdout)
 	slog.SetDefault(logger)
 
 	r := chi.NewRouter()

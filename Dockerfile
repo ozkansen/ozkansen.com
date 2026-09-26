@@ -53,6 +53,12 @@ WORKDIR /app
 COPY --from=stage-3 /app/dist/server .
 COPY --from=stage-3 /app/dist/static ./static
 
+# Container ortamı daima canlı kabul edilir: JSON log + Info seviyesi.
+# Ayrıca STATIC_DIR, çalışma dizinine bağımlılığı tamamen kesmek için açıkça
+# verilir (yine de varsayılan /app/static ile aynıdır).
+ENV APP_ENV=production \
+    STATIC_DIR=/app/static
+
 USER 1000:1000
 
 EXPOSE 8080
