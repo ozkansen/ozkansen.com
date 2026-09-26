@@ -25,27 +25,32 @@ import (
 // küçük seçilmelidir, aksi halde süreç kapanmadan zorla öldürülür.
 const shutdownTimeout = 10 * time.Second
 
-func main() {
-	// APP_ENV=production ile JSON + Info seviyesine geçilir; aksi halde
-	// renkli metin + Debug seviyesi kullanılır.
-	logger := newLogger(os.Getenv("APP_ENV"), os.Stdout)
-	slog.SetDefault(logger)
-
+// newRouter, uygulamanın route ve middleware zincirini kurar. main'den ayrı
+// tutulmasının nedeni test edilebilirlik: zincir sırası (özellikle Recoverer'ın
+// Logger'ın içinde olması) çalışma zamanında doğrulanabilmelidir.
+//
+// staticRoot boşsa assets.New varsayılan kökü kullanır. Ortam okuması main'de
+// yapılır ki bu fonksiyon çevresel değişkene bağımlı olmasın.
+func newRouter(logger *slog.Logger, staticRoot string) (*chi.Mux, error) {
 	r := chi.NewRouter()
 
-	// Middleware zinciri: stdlib uyumlu imza (func(http.Handler) http.Handler) doğrudan Use ile takılır.
+	// Middleware zinciri: stdlib uyumlu imza (func(http.Handler) http.Handler)
+	// doğrudan Use ile takılır. Sıra önemlidir ve dıştan içe doğru işler:
+	//   SecureHeaders → Logger → Recoverer → handler
+	// Recoverer en içte olmalıdır; aksi halde panik Logger'ın next.ServeHTTP
+	// çağrısını atlar ve istek logu hiç yazılmaz.
 	// Not: chi'de tüm Use çağrıları route kayıtlarından ÖNCE yapılmalıdır.
 	r.Use(middleware.SecureHeaders) // en dış: hata yanıtları dahil her yanıt korumalı
 	r.Use(middleware.Logger(logger))
+	r.Use(middleware.Recoverer(logger))
 
 	// 1. Statik Dosyalar
-	// Varlık kökü STATIC_DIR ile verilebilir; verilmezse çalışma dizinindeki
-	// ./static kullanılır. Erişilemiyorsa sunucu hiç başlamaz: sessiz 404'ler
-	// üretmek, hatayı başlangıçta göstermekten daha kötüdür.
-	staticHandler, err := assets.New(os.Getenv("STATIC_DIR"))
+	// Varlık kökü verilmezse çalışma dizinindeki ./static kullanılır.
+	// Erişilemiyorsa sunucu hiç başlamaz: sessiz 404'ler üretmek, hatayı
+	// başlangıçta göstermekten daha kötüdür.
+	staticHandler, err := assets.New(staticRoot)
 	if err != nil {
-		logger.Error("Statik varlıklar yüklenemedi", slog.String("error", err.Error()))
-		os.Exit(1)
+		return nil, err
 	}
 	r.Handle("/static/*", http.StripPrefix("/static/", staticHandler))
 
@@ -55,6 +60,21 @@ func main() {
 	r.Get("/", templ.Handler(pages.Home("Özkan")).ServeHTTP)
 	r.Get("/api/status", apiStatusHandler)
 	r.NotFound(templ.Handler(pages.NotFound(), templ.WithStatus(http.StatusNotFound)).ServeHTTP)
+
+	return r, nil
+}
+
+func main() {
+	// APP_ENV=production ile JSON + Info seviyesine geçilir; aksi halde
+	// renkli metin + Debug seviyesi kullanılır.
+	logger := newLogger(os.Getenv("APP_ENV"), os.Stdout)
+	slog.SetDefault(logger)
+
+	r, err := newRouter(logger, os.Getenv("STATIC_DIR"))
+	if err != nil {
+		logger.Error("Router kurulamadı (statik varlıklar yüklenemedi)", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 
 	logger.Info("Sunucu başlatılıyor", slog.String("port", ":8080"))
 	server := &http.Server{
