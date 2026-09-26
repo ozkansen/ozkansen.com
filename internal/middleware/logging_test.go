@@ -9,15 +9,21 @@ import (
 	"testing"
 )
 
-// statusCapture, slog kayıtlarındaki "status" alanını yakalar.
-type statusCapture struct{ status int }
+// statusCapture, slog kayıtlarındaki "status" ve "remote_ip" alanlarını yakalar.
+type statusCapture struct {
+	status   int
+	remoteIP string
+}
 
 func (c *statusCapture) Enabled(context.Context, slog.Level) bool { return true }
 
 func (c *statusCapture) Handle(_ context.Context, r slog.Record) error { //nolint:gocritic // slog.Handler arayüzü imzayı zorunlu kılar
 	r.Attrs(func(a slog.Attr) bool {
-		if a.Key == "status" {
+		switch a.Key {
+		case "status":
 			c.status = int(a.Value.Int64())
+		case "remote_ip":
+			c.remoteIP = a.Value.String()
 		}
 		return true
 	})
@@ -74,6 +80,56 @@ func TestLoggerLogsActualStatus(t *testing.T) {
 				t.Errorf("loglanan durum %d, gerçek durum %d", capture.status, rec.Code)
 			}
 		})
+	}
+}
+
+// loopback, IPv4 test adresi; tabloda tekrar tekrar yazmamak için.
+const loopback = "127.0.0.1"
+
+func TestRemoteIP(t *testing.T) {
+	tests := []struct {
+		name string
+		addr string
+		want string
+	}{
+		{"IPv4 ve port", loopback + ":48994", loopback},
+		{"IPv6 ve port", "[::1]:51506", "::1"},
+		{"IPv4 port içermiyor", "192.0.2.1", "192.0.2.1"},
+		{"host boş (unix socket)", ":8080", ""},
+		{"bozuk biçim", loopback, loopback},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := remoteIP(tt.addr); got != tt.want {
+				t.Errorf("remoteIP(%q) = %q, beklenen %q", tt.addr, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestRemoteIPIsStable, aynı istemcinin portu değişse bile loglanan IP'nin
+// sabit kaldığını doğrular; aksi halde loglar istemci bazında gruplanamaz.
+func TestRemoteIPIsStable(t *testing.T) {
+	if a, b := remoteIP("203.0.113.7:40001"), remoteIP("203.0.113.7:62110"); a != b {
+		t.Errorf("farklı portlar farklı IP üretti: %q != %q", a, b)
+	}
+}
+
+// TestLoggerLogsRemoteIPWithoutPort, Logger'ın logladığı remote_ip alanında port
+// bulunmadığını uçtan uca doğrular. Regresyon: alan r.RemoteAddr olduğunda
+// efemerel port her istekte değişiyordu.
+func TestLoggerLogsRemoteIPWithoutPort(t *testing.T) {
+	capture := &statusCapture{}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", http.NoBody)
+	req.RemoteAddr = "203.0.113.9:62341"
+
+	Logger(slog.New(capture))(
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	).ServeHTTP(httptest.NewRecorder(), req)
+
+	if got, want := capture.remoteIP, "203.0.113.9"; got != want {
+		t.Errorf("loglanan remote_ip = %q, beklenen %q (port içermemeli)", got, want)
 	}
 }
 

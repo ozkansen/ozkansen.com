@@ -85,6 +85,19 @@ func (rw *responseWriter) Unwrap() http.ResponseWriter {
 	return rw.ResponseWriter
 }
 
+// remoteIP, "host:port" biçimindeki istemci adresinden yalnızca host kısmını
+// döndürür. Port efemereldir ve her istekte değişir; loglanırsa aynı istemci
+// gruplandırılamaz (log gürültüsü) ve gereksiz yere PII saklanır.
+func remoteIP(remoteAddr string) string {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		// Beklenmeyen biçim (unix socket, eksik port): veri kaybına yol açmamak
+		// için ham değeri tercih et.
+		return remoteAddr
+	}
+	return host
+}
+
 // Logger gelen ve giden tüm HTTP isteklerini detaylı şekilde slog ile kaydeder.
 func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -112,7 +125,7 @@ func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 				slog.Int("status", rw.status),
 				slog.Int("bytes", rw.bytesWritten),
 				slog.Duration("duration", duration),
-				slog.String("remote_ip", r.RemoteAddr),
+				slog.String("remote_ip", remoteIP(r.RemoteAddr)),
 				slog.String("user_agent", r.UserAgent()),
 			)
 		})
