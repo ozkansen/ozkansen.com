@@ -23,10 +23,12 @@ air:
 
 # Production için optimize edilmiş build alır
 build:
+	rm -rf ./dist
 	templ generate
 	npx tailwindcss -i ./static/css/input.css -o ./static/css/styles.css --minify
 	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o ./dist/server ./cmd/web
-	cp -r static ./dist/static && rm -rf ./dist/static/css/input.css
+	mkdir -p ./dist/static
+	cp -r static/. ./dist/static/ && rm -f ./dist/static/css/input.css
 
 # Go ve Templ dosyalarını formatlar (girintiler, boşluklar vb.)
 fmt:
