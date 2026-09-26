@@ -51,6 +51,7 @@ func main() {
 	// bilinmeyen yollar NotFound handler'a (404) gider — catch-all önceliği tuzağı yoktur.
 	r.Get("/", templ.Handler(pages.Home("Özkan")).ServeHTTP)
 	r.Get("/api/status", apiStatusHandler)
+	r.NotFound(templ.Handler(pages.NotFound(), templ.WithStatus(http.StatusNotFound)).ServeHTTP)
 
 	logger.Info("Sunucu başlatılıyor", slog.String("port", ":8080"))
 	server := &http.Server{

@@ -1,0 +1,22 @@
+package pages
+
+import "ozkansen.com/internal/views/layout"
+
+// NotFound, bilinmeyen yollar için stil sistemiyle uyumlu 404 sayfası üretir.
+// chi'nin varsayılan NotFound handler'ı düz metin "404 page not found" dönerdi;
+// bu sayfa aynı HTTP semantiğini (404) korurken görsel bir hata deneyimi sunar.
+templ NotFound() {
+	@layout.Base("Sayfa Bulunamadı") {
+		<section class="text-center py-16 space-y-5">
+			<p class="text-6xl font-extrabold tracking-tight text-indigo-400">404</p>
+			<h1 class="text-2xl font-bold">Sayfa bulunamadı</h1>
+			<p class="text-slate-400">Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir.</p>
+			<a
+				href="/"
+				class="inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-md text-sm font-semibold transition"
+			>
+				Anasayfaya Dön
+			</a>
+		</section>
+	}
+}
