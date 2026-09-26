@@ -1,5 +1,8 @@
 FROM golang:1.27.1-trixie AS tools-templ
 
+ENV CGO_ENABLED=0 \
+    GOOS=linux
+
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
     go install github.com/a-h/templ/cmd/templ@latest
@@ -30,8 +33,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
 ENV CGO_ENABLED=0 \
-    GOOS=linux \
-    GOEXPERIMENT='simd,newinliner'
+    GOOS=linux
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \

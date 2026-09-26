@@ -25,7 +25,7 @@ air:
 build:
 	templ generate
 	npx tailwindcss -i ./static/css/input.css -o ./static/css/styles.css --minify
-	GOEXPERIMENT="simd,newinliner" go build -ldflags="-s -w" -trimpath -o ./dist/server ./cmd/web
+	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o ./dist/server ./cmd/web
 	cp -r static ./dist/static && rm -rf ./dist/static/css/input.css
 
 # Go ve Templ dosyalarını formatlar (girintiler, boşluklar vb.)
