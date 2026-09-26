@@ -11,27 +11,36 @@ import (
 )
 
 // responseWriter, HTTP durum kodunu ve yazılan bayt miktarını yakalamak için sarmalayıcı yapı.
+//
+// status, WriteHeader hiç çağrılmamışsa net/http'in de kullanacağı varsayılan
+// 200'den başlar. Böylece status her an gerçek durum kodunu taşır; logger tarafında
+// "0, aslında 200 demek" gibi bir normalizasyona gerek kalmaz.
 type responseWriter struct {
 	http.ResponseWriter
 	status       int
+	wroteHeader  bool
 	bytesWritten int
 }
 
+func newResponseWriter(w http.ResponseWriter) *responseWriter {
+	return &responseWriter{ResponseWriter: w, status: http.StatusOK}
+}
+
 func (rw *responseWriter) WriteHeader(code int) {
-	// Birden fazla çağrıyı yoksay: net/http ilk çağrıyı kullanır,
-	// log'un gerçek durum koduyla uyumlu kalması için burada da ilki korunur.
-	if rw.status != 0 {
+	// net/http yalnızca ilk çağrıyı uygular; log'un gerçek durum koduyla
+	// uyumlu kalması için sonraki çağrılar yok sayılır.
+	if rw.wroteHeader {
 		return
 	}
+	rw.wroteHeader = true
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 }
 
 func (rw *responseWriter) Write(b []byte) (int, error) {
-	// Eğer WriteHeader açıkça çağrılmadıysa Go varsayılan olarak 200 OK döner
-	if rw.status == 0 {
-		rw.status = http.StatusOK
-	}
+	// İlk yazma yanıtı 200'e sabitler; status zaten 200 olduğundan güncelleme
+	// gerekmez, yalnızca sonraki WriteHeader çağrıları yoksayılsın.
+	rw.wroteHeader = true
 	n, err := rw.ResponseWriter.Write(b)
 	rw.bytesWritten += n
 	return n, err
@@ -40,9 +49,7 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 // WriteString, io.StringWriter arayüzünü ileri taşır; böylece io.WriteString
 // çağrıları []byte dönüşümü yapmadan temel ResponseWriter'a ulaşır.
 func (rw *responseWriter) WriteString(s string) (int, error) {
-	if rw.status == 0 {
-		rw.status = http.StatusOK
-	}
+	rw.wroteHeader = true
 	n, err := io.WriteString(rw.ResponseWriter, s)
 	rw.bytesWritten += n
 	return n, err
@@ -84,9 +91,7 @@ func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
-			rw := &responseWriter{
-				ResponseWriter: w,
-			}
+			rw := newResponseWriter(w)
 
 			// İsteği sonraki handler'a ilet
 			next.ServeHTTP(rw, r)
