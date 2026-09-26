@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/lmittmann/tint"
 
+	"ozkansen.com/internal/assets"
 	"ozkansen.com/internal/httputil"
 	"ozkansen.com/internal/middleware"
 	"ozkansen.com/internal/views/pages"
@@ -43,8 +44,15 @@ func main() {
 	r.Use(middleware.Logger(logger))
 
 	// 1. Statik Dosyalar
-	fs := http.FileServer(http.Dir("./static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+	// Varlık kökü STATIC_DIR ile verilebilir; verilmezse çalışma dizinindeki
+	// ./static kullanılır. Erişilemiyorsa sunucu hiç başlamaz: sessiz 404'ler
+	// üretmek, hatayı başlangıçta göstermekten daha kötüdür.
+	staticHandler, err := assets.New(os.Getenv("STATIC_DIR"))
+	if err != nil {
+		logger.Error("Statik varlıklar yüklenemedi", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+	r.Handle("/static/*", http.StripPrefix("/static/", staticHandler))
 
 	// 2. Sayfa ve API Route'ları
 	// chi'de metot-kayıtlı route'lar diğer metotlara otomatik 405 + Allow döner;
