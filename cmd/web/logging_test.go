@@ -102,3 +102,47 @@ func TestIsTerminal(t *testing.T) {
 		t.Error("bytes.Buffer terminal sayılmamalı")
 	}
 }
+
+// TestProductionDurationIsReadable, JSON çıktısında sürenin okunur biçimde
+// olduğunu doğrular. Varsayılan davranış çıplak int64 nanosaniye yazar
+// ("duration":81009); tüketicinin birimi bilmesi gerekir.
+func TestProductionDurationIsReadable(t *testing.T) {
+	var buf bytes.Buffer
+	newLogger(appEnvProd, &buf).Log(t.Context(), slog.LevelInfo, "test", slog.Duration("duration", 81*time.Microsecond))
+
+	var record struct {
+		Duration string `json:"duration"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &record); err != nil {
+		t.Fatalf("JSON değil: %v\n%s", err, buf.String())
+	}
+
+	if record.Duration != "81µs" {
+		t.Errorf("duration = %q, beklenen %q", record.Duration, "81µs")
+	}
+}
+
+// TestNonDurationAttrsUnaffected, ReplaceAttr'ın yalnızca süreleri etkilediğini
+// ve diğer alanlara dokunmadığını doğrular.
+func TestNonDurationAttrsUnaffected(t *testing.T) {
+	var buf bytes.Buffer
+	newLogger(appEnvProd, &buf).Log(t.Context(), slog.LevelInfo, "test",
+		slog.Int("status", 200),
+		slog.String("path", "/"),
+		slog.Int64("bytes", 42),
+	)
+
+	var record map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &record); err != nil {
+		t.Fatalf("JSON değil: %v", err)
+	}
+	if record["status"] != float64(200) {
+		t.Errorf("status = %v, beklenen 200 (sayı olarak kalmalı)", record["status"])
+	}
+	if record["path"] != "/" {
+		t.Errorf("path = %v", record["path"])
+	}
+	if record["bytes"] != float64(42) {
+		t.Errorf("bytes = %v, beklenen 42", record["bytes"])
+	}
+}

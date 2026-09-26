@@ -9,30 +9,82 @@ import (
 	"testing"
 )
 
-// statusCapture, slog kayıtlarındaki "status" ve "remote_ip" alanlarını yakalar.
-type statusCapture struct {
-	status   int
-	remoteIP string
+// statusCapture, slog kayıtlarındaki seçili alanları yakalar.
+type attrCapture struct {
+	status    int
+	remoteIP  string
+	userAgent string
+	path      string
+	method    string
 }
 
-func (c *statusCapture) Enabled(context.Context, slog.Level) bool { return true }
+func (c *attrCapture) Enabled(context.Context, slog.Level) bool { return true }
 
-func (c *statusCapture) Handle(_ context.Context, r slog.Record) error { //nolint:gocritic // slog.Handler arayüzü imzayı zorunlu kılar
+func (c *attrCapture) Handle(_ context.Context, r slog.Record) error { //nolint:gocritic // slog.Handler arayüzü imzayı zorunlu kılar
 	r.Attrs(func(a slog.Attr) bool {
 		switch a.Key {
 		case "status":
 			c.status = int(a.Value.Int64())
 		case "remote_ip":
 			c.remoteIP = a.Value.String()
+		case "user_agent":
+			c.userAgent = a.Value.String()
+		case "path":
+			c.path = a.Value.String()
+		case "method":
+			c.method = a.Value.String()
 		}
 		return true
 	})
 	return nil
 }
 
-func (c *statusCapture) WithAttrs([]slog.Attr) slog.Handler { return c }
+func (c *attrCapture) WithAttrs([]slog.Attr) slog.Handler { return c }
 
-func (c *statusCapture) WithGroup(string) slog.Handler { return c }
+func (c *attrCapture) WithGroup(string) slog.Handler { return c }
+
+// TestUntrustedFieldsAreSanitized, istemciden gelen alanların loglanmadan önce
+// kontrol karakterlerinden arındırıldığını doğrular.
+//
+// Not: slog'un TextHandler ve JSONHandler'ı bu karakterleri zaten kaçışlar
+// (metin çıktısında \r\n iki karakter olarak yazılır, JSON'da \r\n olur), yani
+// çok satırlı log forging zaten engellenmiştir. Buradaki koruma istemci
+// başlıklarındaki kontrol karakterlerinin loga hiç girmemesini garanti eder;
+// log çıktısı başka bir sink'e aktarıldığında veya handler değiştiğinde
+// temizlenmemiş veriye güvenilmez.
+func TestUntrustedFieldsAreSanitized(t *testing.T) {
+	capture := &attrCapture{}
+	logger := slog.New(capture)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/normal", http.NoBody)
+	req.Header.Set("User-Agent", "davinç\r\n\x1b[31msahte\x00")
+	req.URL.Path = "/yol\x00sonra\r\nikinci"
+	req.Method = "GET\x00"
+
+	Logger(logger)(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})).
+		ServeHTTP(httptest.NewRecorder(), req)
+
+	for field, value := range map[string]string{
+		"user_agent": capture.userAgent,
+		"path":       capture.path,
+		"method":     capture.method,
+	} {
+		for _, r := range value {
+			if r < 0x20 || r == 0x7f {
+				t.Errorf("%s içinde kontrol karakteri kaldı: %q", field, value)
+				break
+			}
+		}
+	}
+
+	// Görünür içerik korunmalı; yalnızca kontrol karakterleri silinir.
+	if capture.userAgent != "davinç[31msahte" {
+		t.Errorf("user_agent = %q, beklenen %q", capture.userAgent, "davinç[31msahte")
+	}
+	if capture.path != "/yolsonraikinci" {
+		t.Errorf("path = %q, beklenen %q", capture.path, "/yolsonraikinci")
+	}
+}
 
 // TestLoggerLogsActualStatus, loglanan durum kodunun istemciye giden gerçek
 // durum koduna eşit olduğunu doğrular. Regresyon: handler hiçbir şey yazmadığında
@@ -67,7 +119,7 @@ func TestLoggerLogsActualStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			capture := &statusCapture{}
+			capture := &attrCapture{}
 			rec := httptest.NewRecorder()
 
 			Logger(slog.New(capture))(tt.handler).
@@ -120,7 +172,7 @@ func TestRemoteIPIsStable(t *testing.T) {
 // bulunmadığını uçtan uca doğrular. Regresyon: alan r.RemoteAddr olduğunda
 // efemerel port her istekte değişiyordu.
 func TestLoggerLogsRemoteIPWithoutPort(t *testing.T) {
-	capture := &statusCapture{}
+	capture := &attrCapture{}
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", http.NoBody)
 	req.RemoteAddr = "203.0.113.9:62341"
 
@@ -133,10 +185,36 @@ func TestLoggerLogsRemoteIPWithoutPort(t *testing.T) {
 	}
 }
 
+func TestStripControlChars(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"temiz", "Mozilla/5.0", "Mozilla/5.0"},
+		{"satır sonu", "a\nb", "ab"},
+		{"taşıyıcı dönüşü", "a\r\nb", "ab"},
+		{"NUL", "a\x00b", "ab"},
+		{"DEL", "a\x7fb", "ab"},
+		{"sahte log satırı", "x\nINFO admin giris yapti", "xINFO admin giris yapti"},
+		{"yalnız kontrol karakteri", "\n\r", ""},
+		{"unicode korunur", "Türkçe ğüşıöç — 日本語", "Türkçe ğüşıöç — 日本語"},
+		{"boş", "", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := stripControlChars(tt.in); got != tt.want {
+				t.Errorf("stripControlChars(%q) = %q, beklenen %q", tt.in, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestLoggerCountsBytes(t *testing.T) {
 	body := "çok satırlı gövde"
 
-	Logger(slog.New(&statusCapture{}))(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	Logger(slog.New(&attrCapture{}))(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = io.WriteString(w, body)
 	})).ServeHTTP(httptest.NewRecorder(), httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", http.NoBody))
 

@@ -31,7 +31,10 @@ func newLogger(env string, w io.Writer) *slog.Logger {
 	// düşmektense büyük/küçük harf farkı önemsiz olsun.
 	if strings.EqualFold(env, appEnvProd) {
 		// Prod'da Debug seviyesi hem gürültü hem maliyettir; Info yeterlidir.
-		return slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		return slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{
+			Level:       slog.LevelInfo,
+			ReplaceAttr: readableDuration,
+		}))
 	}
 
 	return slog.New(tint.NewTextHandler(w, &tint.Options{
@@ -39,6 +42,19 @@ func newLogger(env string, w io.Writer) *slog.Logger {
 		TimeFormat: timeFormat,
 		NoColor:    !isTerminal(w),
 	}))
+}
+
+// readableDuration, slog.Duration alanlarını okunur biçime çevirir.
+//
+// slog.Duration varsayılan olarak JSON'da çıplak int64 nanosaniye yazar
+// ("duration":81009). Tüketicinin bunun nanosecond mu mikrosaniye mi
+// millisecond mu olduğunu bilmesi gerekir; geliştirme çıktısındaki
+// "40.199µs" ile de uyumsuzdur.
+func readableDuration(_ []string, a slog.Attr) slog.Attr {
+	if a.Value.Kind() == slog.KindDuration {
+		return slog.String(a.Key, a.Value.Duration().String())
+	}
+	return a
 }
 
 // isTerminal, w hedefinin bir terminal olup olmadığını bildirir. Terminal

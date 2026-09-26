@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -85,6 +86,24 @@ func (rw *responseWriter) Unwrap() http.ResponseWriter {
 	return rw.ResponseWriter
 }
 
+// stripControlChars, istemciden gelen bir değerden kontrol karakterlerini
+// çıkarır. Görünür karakterler korunur, böylece log okunabilir kalır.
+//
+// Kapsam notu: slog'un TextHandler ve JSONHandler'ı bu karakterleri zaten
+// kaçışlar (metin çıktısında \r\n iki karakter olarak yazılır, JSON'da \r\n
+// olur), dolayısıyla çok satırlı log forging oluşmaz. Bu işlem ek güvenliktir:
+// istemci başlıklarındaki kontrol karakterlerinin loga hiç girmesini garanti
+// eder ve log çıktısı başka bir sink'e aktarılırsa ya da handler değişirse
+// temizlenmemiş veriye güvenilmez.
+func stripControlChars(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, s)
+}
+
 // remoteIP, "host:port" biçimindeki istemci adresinden yalnızca host kısmını
 // döndürür. Port efemereldir ve her istekte değişir; loglanırsa aynı istemci
 // gruplandırılamaz (log gürültüsü) ve gereksiz yere PII saklanır.
@@ -120,13 +139,16 @@ func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 			}
 
 			logger.Log(r.Context(), level, "HTTP Request",
-				slog.String("method", r.Method),
-				slog.String("path", r.URL.Path),
+				// method, path ve user_agent istemciden gelir. Temizlenerek
+				// loglanır; ayrıntı için stripControlChars.
+				slog.String("method", stripControlChars(r.Method)),
+				slog.String("path", stripControlChars(r.URL.Path)),
 				slog.Int("status", rw.status),
 				slog.Int("bytes", rw.bytesWritten),
 				slog.Duration("duration", duration),
+				// remote_ip ağ katmanından gelir, istemci başlığı değildir.
 				slog.String("remote_ip", remoteIP(r.RemoteAddr)),
-				slog.String("user_agent", r.UserAgent()),
+				slog.String("user_agent", stripControlChars(r.UserAgent())),
 			)
 		})
 	}
