@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/a-h/templ"
@@ -14,6 +18,12 @@ import (
 	"ozkansen.com/internal/middleware"
 	"ozkansen.com/internal/views/pages"
 )
+
+// shutdownTimeout, kapanma sinyali alındıktan sonra uçuştaki isteklerin
+// tamamlanması için tanınan süre. Docker/K8s'in varsayılan SIGTERM -> SIGKILL
+// süresi 10 saniyedir; graceful kapanma şansı vermek için bu değer ondan
+// küçük seçilmelidir, aksi halde süreç kapanmadan zorla öldürülür.
+const shutdownTimeout = 10 * time.Second
 
 func main() {
 	// Geliştirme ortamı için Text, Canlı (Prod) ortamı için JSON handler tercih edilebilir
@@ -51,10 +61,44 @@ func main() {
 		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	if err := server.ListenAndServe(); err != nil {
+
+	// SIGINT (Ctrl-C) ve SIGTERM (docker stop, K8s) için graceful shutdown.
+	// stop() burada defer'lenmez: os.Exit(1) yolunda defer'ler çalışmaz, kaynaklar
+	// her iki çıkış yolunda da açıkça bırakılır.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+
+	// Shutdown, dinleyiciyi kapatıp ListenAndServe'i hemen serbest bırakır;
+	// drain sonra sürer. Bu kanal olmadan "düzgün kapatıldı" logu drain bitmeden
+	// kaybolur.
+	shutdownDone := make(chan struct{})
+	go func() {
+		defer close(shutdownDone)
+
+		<-ctx.Done()
+		stop() // varsayılan sinyal davranışı: ikinci sinyal zorlamayla sonlandırır
+
+		logger.Info("Kapanma sinyali alındı, uçuştaki istekler bekleniyor",
+			slog.Duration("timeout", shutdownTimeout))
+
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			logger.Error("Kapanma hatası, bekleyen bağlantılar tamamlanmadı",
+				slog.String("error", err.Error()))
+			return
+		}
+		logger.Info("Sunucu düzgün kapatıldı")
+	}()
+
+	// Shutdown normal kapanmayı da ErrServerClosed ile bildirir; bu bir hata değil.
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Error("Sunucu başlatılamadı", slog.String("error", err.Error()))
+		stop()
 		os.Exit(1)
 	}
+
+	<-shutdownDone
 }
 
 // statusFragment, /api/status uç noktasının HTMX fragment yanıtıdır.
